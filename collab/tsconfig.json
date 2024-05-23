@@ -1,0 +1,7 @@
+{
+  "extends": "@guardian/tsconfig",
+  "compilerOptions": {
+    "module": "commonjs",
+    "esModuleInterop": true
+  }
+}
