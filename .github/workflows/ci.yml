@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Build deployment artifacts
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Build
+        run: |
+          ./scripts/ci
+
+      - name: Upload to riff-raff
+        uses: guardian/actions-riff-raff@v4
+        with:
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          roleArn: ${{ secrets.GU_RIFF_RAFF_ROLE_ARN }}
+          buildNumber: ${{ env.GITHUB_RUN_NUMBER }}
+          projectName: Editorial Tools::Editorial Collaboration
+          configPath: cdk/cdk.out/riff-raff.yaml
+          contentDirectories: |
+            cdk.out:
+              - cdk/cdk.out
+            editorial-collaboration:
+              - collab/dist

@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+set -e
+
+pushd cdk
+npm ci
+npm run lint:ci
+npm run format:ci
+npm run test
+npm run synth
+popd
+
+pushd collab
+npm ci
+npm run build
+popd
