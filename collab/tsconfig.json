@@ -1,7 +1,7 @@
 {
   "extends": "@guardian/tsconfig",
   "compilerOptions": {
-    "module": "es6",
+    "module": "commonjs",
     "esModuleInterop": true,
     "strict": true,
 // We have started with a very strict set of compiler options. If
