@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -e
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+ROOT_DIR=${DIR}/..
+
+setup_nginx() {
+  echo "⚙️ Running dev-nginx setup"
+  brew tap guardian/homebrew-devtools
+  brew install guardian/devtools/dev-nginx
+
+  dev-nginx setup-app "$ROOT_DIR"/nginx/nginx-mapping.yaml
+  dev-nginx restart-nginx
+  echo "✅  dev-nginx setup complete"
+}
+
+setup_nginx

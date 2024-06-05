@@ -4,7 +4,7 @@ import express from 'express';
 
 export const app = express();
 
-app.use(express.json()) 
+app.use(express.json())
 
 app.get('/', (req: Request, res: Response) => {
   res.send('Hello World!');
@@ -24,4 +24,3 @@ app.post('/documents/:id/steps', (req: Request, res: Response) => {
   res.status(202);
   res.send("Received");
 });
-
