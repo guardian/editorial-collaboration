@@ -1,0 +1,4 @@
+name: editorial-collaboration
+mappings:
+  - prefix: editorial-collaboration
+    port: 3000
