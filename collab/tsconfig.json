@@ -2,6 +2,20 @@
   "extends": "@guardian/tsconfig",
   "compilerOptions": {
     "module": "commonjs",
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "strict": true,
+// We have started with a very strict set of compiler options. If 
+// some of these become annoying, we should take a decision as a team
+// about turning them off.
+    "allowUnusedLabels": false,
+    "allowUnreachableCode": false,
+    "exactOptionalPropertyTypes": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "isolatedModules": true
   }
 }
