@@ -24,4 +24,3 @@ yalc.lock
 sbt.json
 .idea
 dist/
-index.js
