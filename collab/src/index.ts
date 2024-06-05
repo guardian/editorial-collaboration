@@ -2,8 +2,7 @@ import type { Request, Response } from "express";
 /* eslint "import/no-named-as-default-member": "off" -- This is the only way I can see to avoid a warning about the (correct) way express is imported below */
 import express from 'express';
 
-const app = express();
-const port = 3000;
+export const app = express();
 
 app.use(express.json())
 
@@ -25,5 +24,3 @@ app.post('/documents/:id/steps', (req: Request, res: Response) => {
   res.status(202);
   res.send("Received");
 });
-
-app.listen(port);
