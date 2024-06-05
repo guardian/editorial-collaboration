@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+set -e
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+ROOT_DIR=${DIR}/..
+
+run_nginx() {
+  if pgrep -f nginx >/dev/null; then
+    echo "✅  dev-nginx is already running"
+  else
+    echo "🔄 dev-nginx isn't running, booting now..."
+    dev-nginx restart
+  fi
+}
+
+run_collab() {
+  cd "${ROOT_DIR}/collab"
+  echo "🌟 Collab service should be available at https://editorial-collaboration.local.dev-gutools.co.uk!"
+  npm run --silent start
+}
+
+run_nginx
+run_collab
