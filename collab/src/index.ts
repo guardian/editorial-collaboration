@@ -17,8 +17,8 @@ app.get('/healthcheck', (req: Request, res: Response) => {
 app.post('/documents/:id/steps', (req: Request, res: Response) => {
   console.log(
     {
-      requestBody: req.body,
-      documentId: req.params.id,
+      requestBody: req.body as unknown,
+      documentId: req.params['id'],
     }
   );
   res.status(202);
