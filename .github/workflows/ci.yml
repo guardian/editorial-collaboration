@@ -31,9 +31,20 @@ jobs:
         with:
           node-version-file: ".nvmrc"
 
-      - name: Build
+      - name: Build Stacks
         run: |
           ./scripts/ci
+
+      - name: Build JS
+        working-directory: collab
+        run: |
+          npm ci
+          npm run lint
+          npm run build
+
+      - name: Test (jest)
+        working-directory: collab
+        run: npm run test
 
       - name: Upload to riff-raff
         uses: guardian/actions-riff-raff@v4
