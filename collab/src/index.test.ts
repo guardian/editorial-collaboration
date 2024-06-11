@@ -1,5 +1,12 @@
+import type {NextFunction} from "express";
 import request from 'supertest';
 import { app } from './index';
+
+jest.mock('./middleware/auth-middleware', () => {
+  return {
+    authMiddleware: (_: Request, __: Response, next: NextFunction) => next()
+  }
+});
 
 describe('GET /', () => {
   it('should return Hello World', async () => {
