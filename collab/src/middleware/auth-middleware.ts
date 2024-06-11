@@ -1,15 +1,5 @@
-import {AuthenticationStatus, guardianValidation, PanDomainAuthentication} from "@guardian/pan-domain-node";
-import type {NextFunction, Request, RequestHandler, Response} from "express";
-import {AWS_REGION} from "../constants";
-import {pandaCookieName, pandaPublicConfigFilename, pandaSettingsBucketName} from "../panDomainAuth";
-
-const panda = new PanDomainAuthentication(
-    pandaCookieName,
-    AWS_REGION,
-    pandaSettingsBucketName,
-    pandaPublicConfigFilename,
-    guardianValidation
-);
+import type {NextFunction, Request, Response} from "express";
+import {verify} from "../panDomainAuth";
 
 export const authMiddleware = (
     async (
@@ -19,14 +9,9 @@ export const authMiddleware = (
     ) => {
         const maybeCookieHeader = req.header("Cookie");
         if (maybeCookieHeader === undefined) {
-            return res.sendStatus(403);
+            return res.status(403).send();
         }
-        const {status} = await panda.verify(maybeCookieHeader);
-        return status === AuthenticationStatus.AUTHORISED ? next() : res.sendStatus(403);
+        const isVerified = await verify(maybeCookieHeader);
+        return isVerified ? next() : res.status(403).send();
     }
-/*
-    We cast to RequestHandler to avoid an eslint "no-misused-promises" error.
-    This is not ideal, but there is a known issue with express types:
-    https://github.com/DefinitelyTyped/DefinitelyTyped/issues/50871
-*/
-) as RequestHandler;
+);
