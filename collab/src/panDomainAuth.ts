@@ -30,9 +30,9 @@ const panda = new PanDomainAuthentication(
     guardianValidation
 );
 
-export const verify = async (
+export const getVerifiedUserEmail = async (
     cookieHeader: string
-): Promise<boolean> => {
-    const { status } = await panda.verify(cookieHeader);
-    return status === AuthenticationStatus.AUTHORISED;
+): Promise<null | string> => {
+    const { status, user } = await panda.verify(cookieHeader);
+    return status === AuthenticationStatus.AUTHORISED && user !== undefined ? user.email : null;
 };
