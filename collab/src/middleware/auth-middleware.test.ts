@@ -46,7 +46,7 @@ describe("auth-middleware", () => {
     });
 
     test("should return a 403 response where user is not authenticated", async () => {
-        const mockRequest = getMockRequest("wrong-cookie");
+        const mockRequest = getMockRequest("mock-panda-cookie");
         const mockResponse = getMockResponse();
 
         mockGetVerifiedUserEmailFunction.mockResolvedValueOnce(null);
