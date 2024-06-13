@@ -1,11 +1,12 @@
-import { Step } from "../types/step";
+import { Step, stepTypes } from "../types/step";
 
 const isStep = (item: unknown): item is Step => {
   return !!(
     item &&
     typeof item === "object" &&
     "stepType" in item &&
-    typeof item.stepType === "string"
+    typeof item.stepType === "string" &&
+    stepTypes.includes(item.stepType)
   );
 };
 
