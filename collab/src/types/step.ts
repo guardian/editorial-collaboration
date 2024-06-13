@@ -1,22 +1,37 @@
-export const stepTypes = [
-  "addMark",
-  "removeMark",
-  "addNodeMark",
-  "removeNodeMark",
-  "replace",
-  "replaceAround",
-  "attr",
-  "docAttr",
+import {
+  Step,
+  RemoveMarkStep,
+  AddMarkStep,
+  AddNodeMarkStep,
+  RemoveNodeMarkStep,
+  ReplaceStep,
+  ReplaceAroundStep,
+  AttrStep,
+  DocAttrStep,
+} from "prosemirror-transform";
+
+const defaultStepClasses = [
+  RemoveMarkStep,
+  AddMarkStep,
+  AddNodeMarkStep,
+  RemoveNodeMarkStep,
+  ReplaceStep,
+  ReplaceAroundStep,
+  AttrStep,
+  DocAttrStep,
 ];
 
-export type StepType =
-  | "addMark"
-  | "removeMark"
-  | "addNodeMark"
-  | "removeNodeMark"
-  | "replace"
-  | "replaceAround"
-  | "attr"
-  | "docAttr";
+const defaultStepTypes = defaultStepClasses.map(
+  (stepClass) =>
+    (stepClass.prototype as unknown as Step & { jsonID: string }).jsonID
+);
 
-export type Step = { stepType: StepType } & Record<string, unknown>;
+// If we define custom steps, we would need to add their step types here.
+const ourCustomStepTypes: string[] = [];
+
+export const stepJsonIds = [
+  ...defaultStepTypes,
+  ...ourCustomStepTypes,
+];
+
+export type StepModel = { stepType: string } & Record<string, unknown>;

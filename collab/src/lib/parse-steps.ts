@@ -1,12 +1,12 @@
-import { Step, stepTypes } from "../types/step";
+import { StepModel, stepJsonIds } from "../types/step";
 
-const isStep = (item: unknown): item is Step => {
+const isStep = (item: unknown): item is StepModel => {
   return !!(
     item &&
     typeof item === "object" &&
     "stepType" in item &&
     typeof item.stepType === "string" &&
-    stepTypes.includes(item.stepType)
+    stepJsonIds.includes(item.stepType)
   );
 };
 
@@ -16,7 +16,7 @@ export const validateSteps = (
   | {
       valid: false;
     }
-  | { valid: true; steps: Step[] } => {
+  | { valid: true; steps: StepModel[] } => {
   if (!Array.isArray(data)) {
     return {
       valid: false,
