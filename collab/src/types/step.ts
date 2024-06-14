@@ -1,13 +1,13 @@
 import {
-  Step,
-  RemoveMarkStep,
   AddMarkStep,
   AddNodeMarkStep,
-  RemoveNodeMarkStep,
-  ReplaceStep,
-  ReplaceAroundStep,
   AttrStep,
   DocAttrStep,
+  RemoveMarkStep,
+  RemoveNodeMarkStep,
+  ReplaceAroundStep,
+  ReplaceStep,
+  type Step,
 } from "prosemirror-transform";
 
 const defaultStepClasses = [

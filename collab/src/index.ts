@@ -2,8 +2,8 @@
 import type { Request, Response } from "express";
 /* eslint "import/no-named-as-default-member": "off" -- This is the only way I can see to avoid a warning about the (correct) way express is imported below */
 import express from 'express';
+import {validateSteps} from "./lib/validate-steps";
 import {authMiddleware} from "./middleware/auth-middleware";
-import { validateSteps } from "./lib/validate-steps";
 
 export const app = express();
 

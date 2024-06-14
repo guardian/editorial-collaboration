@@ -1,8 +1,8 @@
-import { StepModel, stepJsonIds } from "../types/step";
+import { stepJsonIds, type StepModel } from "../types/step";
 
 const isStep = (item: unknown): item is StepModel => {
   return !!(
-    item &&
+    !!item &&
     typeof item === "object" &&
     "stepType" in item &&
     typeof item.stepType === "string" &&
