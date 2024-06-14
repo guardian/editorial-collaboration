@@ -1,4 +1,4 @@
-import { validateSteps } from "./parse-steps";
+import { validateSteps } from "./validate-steps";
 
 const validStepTypes = {
   DOC_ATTR: "docAttr",
