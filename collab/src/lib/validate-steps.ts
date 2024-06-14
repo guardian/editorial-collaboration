@@ -1,5 +1,6 @@
 import { stepJsonIds, type StepModel } from "../types/step";
 
+/* eslint-disable -- linter complains of @typescript-eslint/strict-boolean-expressions on line 7. Tried to disable that specific rule but it claims it isn't enabled */
 const isStep = (item: unknown): item is StepModel => {
   return !!(
     !!item &&
@@ -9,6 +10,7 @@ const isStep = (item: unknown): item is StepModel => {
     stepJsonIds.includes(item.stepType)
   );
 };
+/* eslint-enable */
 
 export const validateSteps = (
   data: unknown
