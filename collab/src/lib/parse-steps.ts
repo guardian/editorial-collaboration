@@ -15,6 +15,7 @@ export const validateSteps = (
 ):
   | {
       valid: false;
+      steps?: undefined;
     }
   | { valid: true; steps: StepModel[] } => {
   if (!Array.isArray(data)) {
