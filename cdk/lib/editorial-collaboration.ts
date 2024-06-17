@@ -15,7 +15,7 @@ export class EditorialCollaboration extends GuStack {
 	constructor(scope: App, id: string, props: EditorialCollaborationProps) {
 		super(scope, id, props);
 
-		const { domainName } = props;
+		const { domainName, stage } = props;
 
 		const appName = 'editorial-collaboration';
 
@@ -45,6 +45,7 @@ ExecStart=/usr/bin/node /${appName}/main.js
 Restart=always
 StandardOutput=journal
 StandardError=journal
+Environment=STAGE=${stage}
 User=${appName}
 Group=${appName}
 [Install]
