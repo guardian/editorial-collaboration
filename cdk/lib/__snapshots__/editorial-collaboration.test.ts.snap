@@ -879,6 +879,7 @@ ExecStart=/usr/bin/node /editorial-collaboration/main.js
 Restart=always
 StandardOutput=journal
 StandardError=journal
+Environment=STAGE=TEST
 User=editorial-collaboration
 Group=editorial-collaboration
 [Install]
