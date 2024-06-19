@@ -25,6 +25,9 @@ exports[`The EditorialCollaboration stack matches the snapshot 1`] = `
       "GuApplicationTargetGroup",
       "GuHttpsApplicationListener",
       "GuCname",
+      "GuSecurityGroup",
+      "GuSubnetListParameter",
+      "GuDatabaseInstance",
     ],
     "gu:cdk:version": "TEST",
   },
@@ -53,6 +56,11 @@ exports[`The EditorialCollaboration stack matches the snapshot 1`] = `
       "Default": "/account/services/logging.stream.name",
       "Description": "SSM parameter containing the Name (not ARN) on the kinesis stream",
       "Type": "AWS::SSM::Parameter::Value<String>",
+    },
+    "PrivateSubnets": {
+      "Default": "/account/vpc/primary/subnets/private",
+      "Description": "A list of private subnets",
+      "Type": "AWS::SSM::Parameter::Value<List<AWS::EC2::Subnet::Id>>",
     },
     "VpcId": {
       "Default": "/account/vpc/primary/id",
@@ -173,6 +181,201 @@ exports[`The EditorialCollaboration stack matches the snapshot 1`] = `
       "Type": "AWS::CertificateManager::Certificate",
       "UpdateReplacePolicy": "Retain",
     },
+    "DBSecurityGroupEditorialcollaborationDF4493EF": {
+      "Properties": {
+        "GroupDescription": "Allow traffic from EC2 instance to DB",
+        "SecurityGroupEgress": [
+          {
+            "CidrIp": "255.255.255.255/32",
+            "Description": "Disallow all traffic",
+            "FromPort": 252,
+            "IpProtocol": "icmp",
+            "ToPort": 86,
+          },
+        ],
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "editorial-collaboration",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/editorial-collaboration",
+          },
+          {
+            "Key": "Stack",
+            "Value": "composer",
+          },
+          {
+            "Key": "Stage",
+            "Value": "TEST",
+          },
+        ],
+        "VpcId": {
+          "Ref": "VpcId",
+        },
+      },
+      "Type": "AWS::EC2::SecurityGroup",
+    },
+    "DBSecurityGroupEditorialcollaborationfromEditorialCollaborationGuHttpsEgressSecurityGroupEditorialcollaborationB5107FA954322A46C402": {
+      "Properties": {
+        "Description": "Allow connections from EC2 instance to DB",
+        "FromPort": 5432,
+        "GroupId": {
+          "Fn::GetAtt": [
+            "DBSecurityGroupEditorialcollaborationDF4493EF",
+            "GroupId",
+          ],
+        },
+        "IpProtocol": "tcp",
+        "SourceSecurityGroupId": {
+          "Fn::GetAtt": [
+            "GuHttpsEgressSecurityGroupEditorialcollaborationB5EB9593",
+            "GroupId",
+          ],
+        },
+        "ToPort": 5432,
+      },
+      "Type": "AWS::EC2::SecurityGroupIngress",
+    },
+    "DBSecurityGroupEditorialcollaborationfromEditorialCollaborationWazuhSecurityGroup4E797D24543266AFA3F2": {
+      "Properties": {
+        "Description": "Allow connections from EC2 instance to DB",
+        "FromPort": 5432,
+        "GroupId": {
+          "Fn::GetAtt": [
+            "DBSecurityGroupEditorialcollaborationDF4493EF",
+            "GroupId",
+          ],
+        },
+        "IpProtocol": "tcp",
+        "SourceSecurityGroupId": {
+          "Fn::GetAtt": [
+            "WazuhSecurityGroup",
+            "GroupId",
+          ],
+        },
+        "ToPort": 5432,
+      },
+      "Type": "AWS::EC2::SecurityGroupIngress",
+    },
+    "DBSubnetGroup": {
+      "Properties": {
+        "DBSubnetGroupDescription": "Subnet for editorial collaboration database",
+        "SubnetIds": {
+          "Ref": "PrivateSubnets",
+        },
+        "Tags": [
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/editorial-collaboration",
+          },
+          {
+            "Key": "Stack",
+            "Value": "composer",
+          },
+          {
+            "Key": "Stage",
+            "Value": "TEST",
+          },
+        ],
+      },
+      "Type": "AWS::RDS::DBSubnetGroup",
+    },
+    "DatabaseEditorialcollaborationdbCCA6A1A0": {
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "AllocatedStorage": "150",
+        "AllowMajorVersionUpgrade": false,
+        "AutoMinorVersionUpgrade": true,
+        "CopyTagsToSnapshot": true,
+        "DBInstanceClass": "db.t4g.micro",
+        "DBInstanceIdentifier": "editorial-collaboration-db-test",
+        "DBSubnetGroupName": {
+          "Ref": "DBSubnetGroup",
+        },
+        "DeleteAutomatedBackups": false,
+        "DeletionProtection": true,
+        "EnableIAMDatabaseAuthentication": true,
+        "Engine": "postgres",
+        "EngineVersion": "16.2",
+        "MasterUserPassword": {
+          "Fn::Join": [
+            "",
+            [
+              "{{resolve:secretsmanager:",
+              {
+                "Ref": "EditorialCollaborationDatabaseEditorialcollaborationdbSecretD7DDFB6E3fdaad7efa858a3daf9490cf0a702aeb",
+              },
+              ":SecretString:password::}}",
+            ],
+          ],
+        },
+        "MasterUsername": "editorial_collaboration",
+        "MultiAZ": false,
+        "Port": "5432",
+        "PreferredMaintenanceWindow": "Mon:06:30-Mon:07:00",
+        "PubliclyAccessible": false,
+        "StorageEncrypted": true,
+        "StorageType": "gp2",
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "editorial-collaboration-db",
+          },
+          {
+            "Key": "devx-backup-enabled",
+            "Value": "true",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/editorial-collaboration",
+          },
+          {
+            "Key": "Stack",
+            "Value": "composer",
+          },
+          {
+            "Key": "Stage",
+            "Value": "TEST",
+          },
+        ],
+        "VPCSecurityGroups": [
+          {
+            "Fn::GetAtt": [
+              "DBSecurityGroupEditorialcollaborationDF4493EF",
+              "GroupId",
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::RDS::DBInstance",
+      "UpdateReplacePolicy": "Retain",
+    },
+    "DatabaseEditorialcollaborationdbSecretAttachment6AF09E4C": {
+      "Properties": {
+        "SecretId": {
+          "Ref": "EditorialCollaborationDatabaseEditorialcollaborationdbSecretD7DDFB6E3fdaad7efa858a3daf9490cf0a702aeb",
+        },
+        "TargetId": {
+          "Ref": "DatabaseEditorialcollaborationdbCCA6A1A0",
+        },
+        "TargetType": "AWS::RDS::DBInstance",
+      },
+      "Type": "AWS::SecretsManager::SecretTargetAttachment",
+    },
     "DescribeEC2PolicyFF5F9295": {
       "Properties": {
         "PolicyDocument": {
@@ -215,6 +418,56 @@ exports[`The EditorialCollaboration stack matches the snapshot 1`] = `
         "TTL": 3600,
       },
       "Type": "Guardian::DNS::RecordSet",
+    },
+    "EditorialCollaborationDatabaseEditorialcollaborationdbSecretD7DDFB6E3fdaad7efa858a3daf9490cf0a702aeb": {
+      "DeletionPolicy": "Delete",
+      "Properties": {
+        "Description": {
+          "Fn::Join": [
+            "",
+            [
+              "Generated by the CDK for stack: ",
+              {
+                "Ref": "AWS::StackName",
+              },
+            ],
+          ],
+        },
+        "GenerateSecretString": {
+          "ExcludeCharacters": " %+~\`#$&*()|[]{}:;<>?!'/@"\\",
+          "GenerateStringKey": "password",
+          "PasswordLength": 30,
+          "SecretStringTemplate": "{"username":"editorial_collaboration"}",
+        },
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "editorial-collaboration-db",
+          },
+          {
+            "Key": "devx-backup-enabled",
+            "Value": "true",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/editorial-collaboration",
+          },
+          {
+            "Key": "Stack",
+            "Value": "composer",
+          },
+          {
+            "Key": "Stage",
+            "Value": "TEST",
+          },
+        ],
+      },
+      "Type": "AWS::SecretsManager::Secret",
+      "UpdateReplacePolicy": "Delete",
     },
     "GetDistributablePolicyEditorialcollaboration7454A93E": {
       "Properties": {
@@ -308,6 +561,27 @@ exports[`The EditorialCollaboration stack matches the snapshot 1`] = `
         "ToPort": 3000,
       },
       "Type": "AWS::EC2::SecurityGroupIngress",
+    },
+    "GuHttpsEgressSecurityGroupEditorialcollaborationtoEditorialCollaborationDBSecurityGroupEditorialcollaboration37E069605432BBE81FC9": {
+      "Properties": {
+        "Description": "Allow connections from EC2 instance to DB",
+        "DestinationSecurityGroupId": {
+          "Fn::GetAtt": [
+            "DBSecurityGroupEditorialcollaborationDF4493EF",
+            "GroupId",
+          ],
+        },
+        "FromPort": 5432,
+        "GroupId": {
+          "Fn::GetAtt": [
+            "GuHttpsEgressSecurityGroupEditorialcollaborationB5EB9593",
+            "GroupId",
+          ],
+        },
+        "IpProtocol": "tcp",
+        "ToPort": 5432,
+      },
+      "Type": "AWS::EC2::SecurityGroupEgress",
     },
     "GuLogShippingPolicy981BFE5A": {
       "Properties": {
@@ -760,6 +1034,27 @@ exports[`The EditorialCollaboration stack matches the snapshot 1`] = `
         "ToPort": 3000,
       },
       "Type": "AWS::EC2::SecurityGroupIngress",
+    },
+    "WazuhSecurityGrouptoEditorialCollaborationDBSecurityGroupEditorialcollaboration37E069605432CE28DD4A": {
+      "Properties": {
+        "Description": "Allow connections from EC2 instance to DB",
+        "DestinationSecurityGroupId": {
+          "Fn::GetAtt": [
+            "DBSecurityGroupEditorialcollaborationDF4493EF",
+            "GroupId",
+          ],
+        },
+        "FromPort": 5432,
+        "GroupId": {
+          "Fn::GetAtt": [
+            "WazuhSecurityGroup",
+            "GroupId",
+          ],
+        },
+        "IpProtocol": "tcp",
+        "ToPort": 5432,
+      },
+      "Type": "AWS::EC2::SecurityGroupEgress",
     },
     "composerTESTeditorialcollaborationF4717F5D": {
       "DependsOn": [
