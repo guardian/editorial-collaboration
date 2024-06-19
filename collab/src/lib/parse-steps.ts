@@ -1,5 +1,5 @@
 import type { Json } from "../types/json";
-import { stepJsonIds, type StepModel } from "../types/step";
+import { stepTypeIds, type StepModel } from "../types/step";
 
 const isStep = (item: Json): item is StepModel => {
   return !!(
@@ -7,7 +7,7 @@ const isStep = (item: Json): item is StepModel => {
     item != null &&
     "stepType" in item &&
     typeof item["stepType"] === "string" &&
-    stepJsonIds.includes(item["stepType"])
+    stepTypeIds.includes(item["stepType"])
   );
 };
 
