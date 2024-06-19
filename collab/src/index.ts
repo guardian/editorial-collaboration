@@ -30,7 +30,6 @@ app.post('/documents/:id/steps', authMiddleware, (req: Request, res: Response) =
     }
   );
 
-  // linter objects to `if (!parsedSteps)` -  @typescript-eslint/strict-boolean-expressions
   if (typeof parsedSteps === 'undefined') {
     res.status(400);
     res.send("Not valid steps");
