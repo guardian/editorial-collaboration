@@ -9,6 +9,7 @@ import {
   ReplaceStep,
   type Step,
 } from "prosemirror-transform";
+import { Json } from "./json";
 
 const defaultStepClasses = [
   RemoveMarkStep,
@@ -53,4 +54,4 @@ export const stepJsonIds = [
   ...ourCustomStepTypes,
 ];
 
-export type StepModel = { stepType: string } & Record<string, unknown>;
+export type StepModel = { stepType: string } & Record<string, Json>;

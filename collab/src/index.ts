@@ -2,8 +2,9 @@
 import type { Request, Response } from "express";
 /* eslint "import/no-named-as-default-member": "off" -- This is the only way I can see to avoid a warning about the (correct) way express is imported below */
 import express from 'express';
-import {validateSteps} from "./lib/validate-steps";
+import {parseSteps} from "./lib/parse-steps";
 import {authMiddleware} from "./middleware/auth-middleware";
+import { Json } from "./types/json";
 
 export const app = express();
 
@@ -18,18 +19,18 @@ app.get('/healthcheck', (req: Request, res: Response) => {
 });
 
 app.post('/documents/:id/steps', authMiddleware, (req: Request, res: Response) => {
-  const requestBody = req.body as unknown;
-  const validationResult = validateSteps(requestBody)
+  const requestBody = req.body as Json;
+  const parsedSteps = parseSteps(requestBody)
 
   console.log(
     {
       requestBody,
       documentId: req.params['id'],
-      ...validationResult,
+      parsedSteps,
     }
   );
 
-  if (!validationResult.valid) {
+  if (!parsedSteps) {
     res.status(400);
     res.send("Not valid steps");
     return

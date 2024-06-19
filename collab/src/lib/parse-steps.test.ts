@@ -1,4 +1,4 @@
-import { validateSteps } from "./validate-steps";
+import { parseSteps } from "./parse-steps";
 
 const validStepTypes = {
   DOC_ATTR: "docAttr",
@@ -6,17 +6,17 @@ const validStepTypes = {
   REMOVE_MARK: "removeMark",
 };
 
-describe(validateSteps.name, () => {
-  it("will pass an empty array", () => {
-    const result = validateSteps([]);
-    expect(result.valid).toBe(true);
+describe(parseSteps.name, () => {
+  it("will parse an empty array", () => {
+    const result = parseSteps([]);
+    expect(result).toEqual([]);
   });
-  it("will fail an array of primitives", () => {
-    const result = validateSteps([true, 12, "string"]);
-    expect(result.valid).toBe(false);
+  it("will return undefined for an array of primitives", () => {
+    const result = parseSteps([true, 12, "string"]);
+    expect(result).toBeUndefined();
   });
   it("will fail a steps where any step has an invalid stepType", () => {
-    const result = validateSteps([
+    const result = parseSteps([
       {
         stepType: "no-such-step-type-as-this",
       },
@@ -24,10 +24,10 @@ describe(validateSteps.name, () => {
         stepType: validStepTypes.DOC_ATTR,
       },
     ]);
-    expect(result.valid).toBe(false);
+    expect(result).toBeUndefined();
   });
   it("will accept an array of steps with valid stepTypes, regardless of the other fields in each step", () => {
-    const result = validateSteps([
+    const result = parseSteps([
       {
         stepType: validStepTypes.DOC_ATTR,
         arbitraryField: {
@@ -45,7 +45,6 @@ describe(validateSteps.name, () => {
         foo: "bar",
       },
     ]);
-    expect(result.valid).toBe(true);
-    expect(result.steps?.length).toBe(3)
+    expect(result?.length).toBe(3);
   });
 });
