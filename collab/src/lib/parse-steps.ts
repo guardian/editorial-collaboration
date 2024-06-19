@@ -1,5 +1,5 @@
 import type { Json } from "../types/json";
-import { stepTypeIds, type StepModel } from "../types/step";
+import { type StepModel, stepTypeIds } from "../types/step";
 
 const isStep = (item: Json): item is StepModel => {
   return !!(
