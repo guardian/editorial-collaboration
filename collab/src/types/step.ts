@@ -22,6 +22,8 @@ const defaultStepClasses = [
   DocAttrStep,
 ];
 
+type StepWithJsonId = Step & { jsonID: string }
+
 /**
  * Under the hood "prosemirror-transform" assigns a `jsonID` property to each of
  * the default subclasses of `Step`. It corresponds to value of the `stepType`
@@ -38,7 +40,7 @@ const defaultStepClasses = [
  */
 const defaultStepTypes = defaultStepClasses.map(
   (stepClass) =>
-    (stepClass.prototype as unknown as Step & { jsonID: string }).jsonID
+    (stepClass.prototype as unknown as StepWithJsonId).jsonID
 );
 
 /**
