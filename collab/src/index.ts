@@ -4,7 +4,7 @@ import type { Request, Response } from "express";
 import express from 'express';
 import {parseSteps} from "./lib/parse-steps";
 import {authMiddleware} from "./middleware/auth-middleware";
-import { Json } from "./types/json";
+import type { Json } from "./types/json";
 
 export const app = express();
 
@@ -30,7 +30,8 @@ app.post('/documents/:id/steps', authMiddleware, (req: Request, res: Response) =
     }
   );
 
-  if (!parsedSteps) {
+  // linter objects to `if (!parsedSteps)` -  @typescript-eslint/strict-boolean-expressions
+  if (typeof parsedSteps === 'undefined') {
     res.status(400);
     res.send("Not valid steps");
     return
