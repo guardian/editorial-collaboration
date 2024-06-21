@@ -2,7 +2,7 @@ import type { Json } from "../types/json";
 import { type StepModel, stepTypeIds } from "../types/step";
 
 const isStep = (item: Json): item is StepModel => {
-  return !!(
+  return (
     typeof item === "object" &&
     item != null &&
     "stepType" in item &&
