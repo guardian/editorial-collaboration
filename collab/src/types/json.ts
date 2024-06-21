@@ -1,5 +1,5 @@
 /**
- * Recursive type representing any value that can be returned be deserialising a JSON document.
+ * Recursive type representing any value that can be returned by deserialising a JSON document.
  * 
  * By extension, it is also a valid type for any field of any object within a JSON document and 
  * any member of any array within a JSON document. 
