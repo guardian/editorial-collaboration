@@ -29,3 +29,16 @@ or for live updates
 ```bash
 npm run test-watch
 ```
+
+#### Architecture
+
+The Node server runs on an EC2 instance. We persist edit history steps in an RDS managed Postgres database. 
+
+```mermaid
+flowchart
+    N["Node Server \n <i>EC2</i>"]
+    P[("Postgres DB \n <i>RDS</i>")]
+    subgraph VPC
+        N --persists edit history--> P
+    end
+```
