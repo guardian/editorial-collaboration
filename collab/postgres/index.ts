@@ -12,7 +12,7 @@ const sql = postgres({
   password             : 'ec',
 });
 
-const directory = path.join(__dirname, '..');
+const directory = path.join(__dirname, 'migrations');
 const fileExtension = '.sql';
 
 const migrate = async () => {

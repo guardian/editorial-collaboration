@@ -9,7 +9,7 @@
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "test": "jest --coverage",
     "test-watch": "jest --coverage --watchAll",
-    "database-migration": "ts-node postgres/scripts/create-tables.ts"
+    "database-migration": "ts-node postgres/index.ts"
   },
   "author": "",
   "license": "ISC",
