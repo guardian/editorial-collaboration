@@ -11,7 +11,26 @@ setup_nginx() {
 
   dev-nginx setup-app "$ROOT_DIR"/nginx/nginx-mapping.yaml
   dev-nginx restart-nginx
-  echo "✅  dev-nginx setup complete"
+  echo "✅ dev-nginx setup complete"
+}
+
+npm_install() {
+  echo "⚙️ Running npm install"
+  pushd collab
+  npm i
+  popd
+  echo "✅ npm install complete"
+}
+
+setup_postgres() {
+  echo "⚙️ Running postgres setup"
+  docker-compose up -d
+  pushd collab
+  npm run database-migration
+  popd
+  echo "✅ postgres setup complete"
 }
 
 setup_nginx
+npm_install
+setup_postgres
