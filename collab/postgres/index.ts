@@ -1,6 +1,5 @@
 import fs from 'fs';
 import path from 'path';
-import type { PendingQuery } from 'postgres';
 import postgres from 'postgres';
 
 const directory = path.join(__dirname, 'migrations');
@@ -23,39 +22,27 @@ const sql = postgres({
 });
 
 const migrate = async () => {
-  const processes: Array<PendingQuery<readonly never[]>> = [];
-  fs.readdirSync(directory)
-    .filter(file => file.endsWith(fileExtension))
-    .forEach(file => {
-      processes.push(sql.file(`${directory}/${file}`))
-  })
-  return await Promise.allSettled(processes);
+  for (const file of fs.readdirSync(directory)
+    .filter(f => f.endsWith(fileExtension))
+    .sort()) {
+      await sql.file(`${directory}/${file}`).catch(err => handleError(err));
+  }
 };
 
-const isPostgresError = (error: unknown): error is PostgresError => {
-  return typeof error === 'object' && 'code' in error!;
-};
-
-const handleResults = (results: Array<PromiseSettledResult<Awaited<PendingQuery<readonly never[]>>>>) => {
-  const errors: unknown[] = [];
-  results.forEach(result => {
-    if (result.status === 'rejected') {
-      if (isPostgresError(result.reason) && result.reason.code === tableAlreadyExistsErrCode) {
-        return; // ignore 'table already exists' errors
-      }
-      errors.push(result.reason);
-    }
-  });
-  if (errors.length > 0) {
-    console.error(`${errorMessage}: ${String(errors)}`);
+const handleError = (err: unknown) => {
+  if ((err as PostgresError).code === tableAlreadyExistsErrCode) {
+    return; // ignore 'table already exists' errors
+  } else {
+    console.error(`${errorMessage}: ${String(err)}`);
     process.exit(1);
   }
-  console.info(successMessage);
-  process.exit(0);
 }
 
 migrate()
-  .then((results) => handleResults(results))
+  .then(() => {
+    console.info(successMessage);
+    process.exit(0);
+  })
   .catch((errors) => {
     console.error(`${errorMessage}: ${errors}`);
     process.exit(1);
