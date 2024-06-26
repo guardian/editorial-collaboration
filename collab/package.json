@@ -15,7 +15,8 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.19.2",
-    "postgres": "^3.4.4"
+    "postgres": "^3.4.4",
+    "prosemirror-transform": "^1.9.0"
   },
   "devDependencies": {
     "@guardian/eslint-config-typescript": "^10.0.1",
