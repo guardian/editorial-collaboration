@@ -1,0 +1,1 @@
+CREATE TABLE step(id VARCHAR(50) NOT NULL, timestamp TIMESTAMP(6) NOT NULL, content jsonb NOT NULL);

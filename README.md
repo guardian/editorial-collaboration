@@ -3,7 +3,7 @@
 This is a Node application written in TypeScript.
 
 #### Setup
-You will need Brew installed on your machine to run the setup script.
+You will need Brew and Docker installed on your machine to run the setup script.
 
 To set up, run the following command:
 ```bash

@@ -1,0 +1,12 @@
+services:
+  editorial-collaboration:
+    container_name: db
+    image: postgres:16.3-alpine
+    ports:
+      - 6432:5432
+    expose:
+      - 5432
+    environment:
+      - POSTGRES_USER=ec
+      - POSTGRES_PASSWORD=ec
+      - POSTGRES_DB=collaboration
