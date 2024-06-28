@@ -97,7 +97,8 @@ systemctl start ${appName}
 
 		new GuDatabaseInstance(this, 'Database', {
 			app: `${appName}-db`,
-			instanceIdentifier: `${appName}-db-${stage}`,
+			databaseName: 'collaboration',
+			instanceIdentifier: `${appName}-${stage}-db`,
 			instanceType: 'db.t4g.micro',
 			engine: rds.DatabaseInstanceEngine.postgres({
 				version: rds.PostgresEngineVersion.VER_16_2,
@@ -112,7 +113,9 @@ systemctl start ${appName}
 			}),
 			port: dbPort,
 			preferredMaintenanceWindow: 'Mon:06:30-Mon:07:00',
-			credentials: rds.Credentials.fromGeneratedSecret(dbUsername),
+			credentials: rds.Credentials.fromGeneratedSecret(dbUsername, {
+				secretName: `/${stage}/flexible/editorial-collaboration/db`,
+			}),
 			iamAuthentication: true,
 			storageType: rds.StorageType.GP2, // SSD
 			allocatedStorage: 150,
