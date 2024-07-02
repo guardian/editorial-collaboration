@@ -2,6 +2,7 @@
 import type { Request, Response } from 'express';
 /* eslint "import/no-named-as-default-member": "off" -- This is the only way I can see to avoid a warning about the (correct) way express is imported below */
 import express from 'express';
+import { database } from './lib/database';
 import { parseSteps } from './lib/parse-steps';
 import { authMiddleware } from './middleware/auth-middleware';
 import type { Json } from "./types/json";
@@ -18,24 +19,29 @@ app.get('/healthcheck', (req: Request, res: Response) => {
     res.send('OK');
 });
 
-app.post('/documents/:id/steps', authMiddleware, (req: Request, res: Response) => {
+app.post('/documents/:id/steps', authMiddleware, async (req: Request, res: Response) => {
   const requestBody = req.body as Json;
+  const { id } = req.params;
   const parsedSteps = parseSteps(requestBody)
-
-  console.log(
-    {
-      requestBody,
-      documentId: req.params['id'],
-      parsedSteps,
-    }
-  );
 
   if (typeof parsedSteps === 'undefined') {
     res.status(400);
     res.send("Not valid steps");
-    return
+    return;
   }
 
-  res.status(202);
-  res.send("Received");
+  if (id == null) {
+    res.status(400);
+    res.send("Missing required ID parameter");
+    return;
+  }
+
+  await database.saveSteps(id, parsedSteps).then(() => {
+    res.status(202);
+    res.send("Received");
+  }).catch(() => {
+    res.status(500);
+    res.send("Error saving steps to database");
+  })
+
 });

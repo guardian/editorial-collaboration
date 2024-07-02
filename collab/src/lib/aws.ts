@@ -36,8 +36,7 @@ class SecretsManager {
         } else if (err instanceof Error) {
           return `${err.name}: ${err.message}`
         } else {
-          console.error(err);
-          return 'unknown error'
+          return String(err);
         }
       }
       return Promise.reject(getErrorMessage());
