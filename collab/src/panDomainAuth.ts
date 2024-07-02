@@ -3,13 +3,8 @@ import {
     guardianValidation,
     PanDomainAuthentication
 } from "@guardian/pan-domain-node";
-import {AWS_REGION} from "./constants";
+import { AWS_REGION, STAGE } from "./constants";
 import type { Stage } from "./types/stage";
-
-const maybeStage = process.env["STAGE"];
-const STAGE: Stage = maybeStage !== undefined && ["PROD", "CODE", "LOCAL"].includes(maybeStage)
-        ? maybeStage as Stage
-        : "LOCAL";
 
 const pandaConfigFilenameLookup: { [stage in Stage]: string } = {
     PROD: "gutools.co.uk.settings",
