@@ -54,14 +54,10 @@ class Database {
   };
 
   public saveSteps = async (id: string, steps: StepModel[]) => {
-    const timestamp = Date.now();
+    const timestamp: number = Date.now();
+    const values = steps.map(step => { return { id, timestamp, content: step }})
     await this.connect()
-      .then((sql: Sql) => sql`
-            INSERT INTO
-                step (id, timestamp, content)
-            VALUES
-                (${id}, ${timestamp}, ${JSON.stringify(steps)})
-          `)
+      .then((sql: Sql) => sql`INSERT INTO step ${ sql(values) }`)
       .catch(err => console.error(err)) // TODO: logging/alerting
   };
 }
