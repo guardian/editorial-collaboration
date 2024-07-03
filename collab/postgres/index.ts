@@ -12,13 +12,12 @@ type PostgresError = {
   code: string;
 }
 
-// these details must match those in ../../docker-compose.yml
 const sql = postgres({
-  host                 : 'localhost',
-  port                 : 6432,
-  database             : 'collaboration',
-  username             : 'ec',
-  password             : 'ec',
+  host: process.env['db.host'] ?? '',
+  port: parseInt(process.env['db.port'] ?? ''),
+  database: process.env['db.database'] ?? '',
+  username: process.env['db.username'] ?? '',
+  password: process.env['db.password'] ?? '',
 });
 
 const migrate = async () => {

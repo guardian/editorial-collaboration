@@ -26,6 +26,7 @@ setup_postgres() {
   echo "⚙️ Running postgres setup"
   docker-compose up -d
   pushd collab
+  cp ".env.example" ".env"
   npm run database-migration
   popd
   echo "✅ postgres setup complete"

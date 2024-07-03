@@ -37,8 +37,18 @@ class Database {
   private sql: Sql | undefined;
 
   private config = async (): Promise<DatabaseConfig> => {
-    const SecretId = `/${STAGE}/flexible/editorial-collaboration/db`;
-    return await SecretsManager.getInstance().getSecretValue(SecretId).then(res => parseDatabaseConfig(res));
+    if (STAGE === 'LOCAL') {
+      return {
+        host: process.env['db.host'] ?? '',
+        port: parseInt(process.env['db.port'] ?? ''),
+        database: process.env['db.database'] ?? '',
+        username: process.env['db.username'] ?? '',
+        password: process.env['db.password'] ?? '',
+      }
+    } else {
+      const SecretId = `/${STAGE}/flexible/editorial-collaboration/db`;
+      return await SecretsManager.getInstance().getSecretValue(SecretId).then(res => parseDatabaseConfig(res));
+    }
   };
 
   private connect = async (): Promise<Sql> => {
