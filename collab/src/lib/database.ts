@@ -46,6 +46,7 @@ class Database {
         password: process.env['db.password'] ?? '',
       }
     } else {
+      // TODO: parameterise this value with stack and appName
       const SecretId = `/${STAGE}/flexible/editorial-collaboration/db`;
       return await SecretsManager.getInstance().getSecretValue(SecretId).then(res => parseDatabaseConfig(res));
     }
