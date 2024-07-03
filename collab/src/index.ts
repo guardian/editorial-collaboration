@@ -33,22 +33,22 @@ app.post('/documents/:id/steps', authMiddleware, async (req: Request, res: Respo
 
   if (typeof parsedSteps === 'undefined') {
     res.status(400);
-    res.send("Not valid steps");
+    res.send('Not valid steps');
     return;
   }
 
   if (id == null) {
     res.status(400);
-    res.send("Missing required ID parameter");
+    res.send('Missing required ID parameter');
     return;
   }
 
   await database.saveSteps(id, parsedSteps).then(() => {
     res.status(202);
-    res.send("Received");
+    res.send('Received');
   }).catch(() => {
     res.status(500);
-    res.send("Error saving steps to database");
+    res.send('Error saving steps to database');
   })
 
 });
