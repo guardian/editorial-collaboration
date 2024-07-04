@@ -66,10 +66,34 @@ class Database {
 
   public saveSteps = async (id: string, steps: StepModel[]) => {
     const timestamp: number = Date.now();
-    const values = steps.map(step => { return { id, timestamp, content: step }})
+    const values = steps.map((step) => {
+      return { id, timestamp, content: step };
+    });
     await this.connect()
-      .then((sql: Sql) => sql`INSERT INTO step ${ sql(values) }`)
-      .catch(err => console.error(err)) // TODO: logging/alerting
+      .then((sql: Sql) => sql`INSERT INTO step ${sql(values)}`)
+      .catch((err) => console.error(err)); // TODO: logging/alerting
+  };
+
+  public listDocumentIds = async (): Promise<string[]> => {
+    const sql = await this.connect();
+    const rows = (await sql`SELECT DISTINCT id FROM step`) as { id: string }[];
+    return rows.map((row) => row.id);
+  };
+
+  public getStepsForDocument = async (id: string) => {
+    const sql = await this.connect();
+    const rows = (await sql`SELECT * FROM step WHERE id=${id}`) as {
+      id: string;
+      timestamp: string;
+      content: StepModel;
+    }[];
+
+    return rows
+      .sort((a, b) => Number(a.timestamp) - Number(b.timestamp))
+      .map((row) => ({
+        timestamp: new Date(row.timestamp),
+        step: row.content,
+      }));
   };
 }
 

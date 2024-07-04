@@ -26,6 +26,21 @@ app.get('/healthcheck', (req: Request, res: Response) => {
     res.send('OK');
 });
 
+app.get('/documents', authMiddleware, async  (req: Request, res: Response) => {
+  const documentIds = await database.listDocumentIds()
+  res.json( { documentIds})
+})
+
+app.get('/documents/:id', authMiddleware, async (req: Request, res: Response) => {
+  const { id } = req.params;
+  if (!id) {
+     res.status(400).send('No id');
+     return;
+  }
+  const steps = await database.getStepsForDocument(id)
+  res.json( {id, steps})
+})
+
 app.post('/documents/:id/steps', authMiddleware, async (req: Request, res: Response) => {
   const requestBody = req.body as Json;
   const { id } = req.params;
