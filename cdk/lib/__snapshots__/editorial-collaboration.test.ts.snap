@@ -298,7 +298,8 @@ exports[`The EditorialCollaboration stack matches the snapshot 1`] = `
         "AutoMinorVersionUpgrade": true,
         "CopyTagsToSnapshot": true,
         "DBInstanceClass": "db.t4g.micro",
-        "DBInstanceIdentifier": "editorial-collaboration-db-test",
+        "DBInstanceIdentifier": "editorial-collaboration-test-db",
+        "DBName": "collaboration",
         "DBSubnetGroupName": {
           "Ref": "DBSubnetGroup",
         },
@@ -439,6 +440,7 @@ exports[`The EditorialCollaboration stack matches the snapshot 1`] = `
           "PasswordLength": 30,
           "SecretStringTemplate": "{"username":"editorial_collaboration"}",
         },
+        "Name": "/TEST/flexible/editorial-collaboration/db",
         "Tags": [
           {
             "Key": "App",

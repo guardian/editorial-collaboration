@@ -25,3 +25,4 @@ sbt.json
 .idea
 dist/
 collab/coverage
+.env
