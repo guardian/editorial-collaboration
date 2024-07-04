@@ -56,7 +56,7 @@ class Database {
     if (this.sql === undefined) {
       return await this.config()
         .then((config: DatabaseConfig) => {
-          this.sql = postgres(config);
+          this.sql = postgres({ ...config, ssl: 'require' });
           return this.sql;
         });
     } else {
