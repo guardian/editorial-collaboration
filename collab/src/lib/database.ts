@@ -76,17 +76,17 @@ class Database {
 
   public listDocumentIds = async (): Promise<string[]> => {
     const sql = await this.connect();
-    const rows = (await sql`SELECT DISTINCT id FROM step`) as { id: string }[];
+    const rows = (await sql`SELECT DISTINCT id FROM step`) as Array<{ id: string }>;
     return rows.map((row) => row.id);
   };
 
   public getStepsForDocument = async (id: string) => {
     const sql = await this.connect();
-    const rows = (await sql`SELECT * FROM step WHERE id=${id}`) as {
+    const rows = (await sql`SELECT * FROM step WHERE id=${id}`) as Array<{
       id: string;
       timestamp: string;
       content: StepModel;
-    }[];
+    }>;
 
     return rows
       .sort((a, b) => Number(a.timestamp) - Number(b.timestamp))

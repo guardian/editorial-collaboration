@@ -33,7 +33,7 @@ app.get('/documents', authMiddleware, async  (req: Request, res: Response) => {
 
 app.get('/documents/:id', authMiddleware, async (req: Request, res: Response) => {
   const { id } = req.params;
-  if (!id) {
+  if ( typeof id !== 'string' || id === '') {
      res.status(400).send('No id');
      return;
   }
