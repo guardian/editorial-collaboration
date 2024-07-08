@@ -11,6 +11,7 @@ type DatabaseConfig = {
   database: string;
   username: string;
   password: string;
+  ssl?: 'require';
 }
 
 const isDatabaseConfig = (json: Json): json is DatabaseConfig => {
@@ -48,7 +49,12 @@ class Database {
     } else {
       // TODO: parameterise this value with stack and appName
       const SecretId = `/${STAGE}/flexible/editorial-collaboration/db`;
-      return await SecretsManager.getInstance().getSecretValue(SecretId).then(res => parseDatabaseConfig(res));
+      return await SecretsManager.getInstance().getSecretValue(SecretId).then(res => {
+        return {
+          ...parseDatabaseConfig(res),
+          ssl: 'require'
+        }
+      });
     }
   };
 
@@ -56,7 +62,7 @@ class Database {
     if (this.sql === undefined) {
       return await this.config()
         .then((config: DatabaseConfig) => {
-          this.sql = postgres({ ...config, ssl: 'require' });
+          this.sql = postgres(config);
           return this.sql;
         });
     } else {
@@ -71,6 +77,11 @@ class Database {
       .then((sql: Sql) => sql`INSERT INTO step ${ sql(values) }`)
       .catch(err => console.error(err)) // TODO: logging/alerting
   };
+
+  public getSteps = async (id: string) => {
+    return await this.connect()
+      .then((sql: Sql) => sql`SELECT content FROM step WHERE id = id`);
+  }
 }
 
 const database = new Database();
