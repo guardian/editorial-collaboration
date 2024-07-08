@@ -88,14 +88,13 @@ class Database {
 
   public getStepsForDocument = async (id: string) => {
     const sql = await this.connect();
-    const rows = (await sql`SELECT * FROM step WHERE id=${id}`) as Array<{
+    const rows = (await sql`SELECT * FROM step WHERE id=${id} ORDER BY timestamp`) as Array<{
       id: string;
       timestamp: string;
       content: StepModel;
     }>;
 
     return rows
-      .sort((a, b) => Number(a.timestamp) - Number(b.timestamp))
       .map((row) => ({
         timestamp: new Date(row.timestamp),
         step: row.content,
