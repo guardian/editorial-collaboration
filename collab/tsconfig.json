@@ -17,6 +17,7 @@
     "noUncheckedIndexedAccess": true,
     "noUnusedLocals": true,
     "isolatedModules": true,
-    "types": ["node", "jest"]
+    "types": ["node", "jest"],
+    "jsx": "react-jsx"
   }
 }
