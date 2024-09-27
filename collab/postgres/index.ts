@@ -18,7 +18,7 @@ const sql = postgres({
   database: process.env['db.database'] ?? '',
   username: process.env['db.username'] ?? '',
   password: process.env['db.password'] ?? '',
-  ssl: 'require',
+  ssl: 'prefer',
 });
 
 const migrate = async () => {

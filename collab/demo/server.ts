@@ -5,7 +5,7 @@ export const app = express();
 
 app.use('/public', serveStatic('demo/dist'));
 
-app.get('/', (req: Request, res: Response) => {
+app.get('/:id', (req: Request, res: Response) => {
   res.send(`
 	    <!doctype html>
 	    <html lang="en">

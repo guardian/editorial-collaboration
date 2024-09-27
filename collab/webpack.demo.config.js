@@ -1,9 +1,8 @@
 module.exports = {
-  entry: './demo/index.tsx',
+  entry: './demo/App.tsx',
   output: {
     path: require('path').resolve(__dirname, 'demo/dist'),
   },
-  mode: 'production',
   target: 'node',
   module: {
     rules: [
