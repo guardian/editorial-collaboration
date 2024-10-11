@@ -3,10 +3,10 @@ import { schema } from 'prosemirror-schema-basic';
 import { EditorState } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
 import React, { useEffect, useRef } from 'react';
-import { useParams } from 'react-router-dom';
+import { useLoaderData } from 'react-router-dom';
 
 const Editor: React.FunctionComponent = () => {
-  const { id } = useParams();
+  const data = JSON.stringify(useLoaderData());
   const editor = useRef<HTMLDivElement>(null);
   const initialised = useRef<boolean>(false);
 
@@ -24,7 +24,7 @@ const Editor: React.FunctionComponent = () => {
 
   return (
     <div>
-      <div>{id}</div>
+      <div>{data}</div>
       <div css={style} ref={editor} />
     </div>
   );

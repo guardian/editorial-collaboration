@@ -14,19 +14,15 @@ export const app = express();
 app.use(express.json());
 
 app.use((cors as (options: cors.CorsOptions) => express.RequestHandler)({
-  origin: `https://composer.${DOMAIN}`,
+  origin: [`https://composer.${DOMAIN}`, `https://editorial-collaboration-demo.${DOMAIN}`],
   credentials: true
 }));
-
-app.get('/', authMiddleware, (req: Request, res: Response) => {
-    res.send('Hello World!');
-});
 
 app.get('/healthcheck', (req: Request, res: Response) => {
     res.send('OK');
 });
 
-app.post('/documents/:id/steps', authMiddleware, async (req: Request, res: Response) => {
+app.post('/document/:id/steps', authMiddleware, async (req: Request, res: Response) => {
   const requestBody = req.body as Json;
   const { id } = req.params;
   const parsedSteps = parseSteps(requestBody)
@@ -51,4 +47,25 @@ app.post('/documents/:id/steps', authMiddleware, async (req: Request, res: Respo
     res.send('Error saving steps to database');
   })
 
+});
+
+app.get('/document/:id/steps', authMiddleware, async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  if (id !== undefined) {
+    await database.getSteps(id).then((steps) => {
+      res.status(202);
+      res.send(steps);
+    }).catch(() => {
+      res.status(500);
+      res.send('Error saving steps to database');
+    })
+  } else {
+    res.status(400)
+    res.send('No content id provided');
+  }
+});
+
+app.get('/', authMiddleware, (req: Request, res: Response) => {
+    res.send('Hello World!');
 });

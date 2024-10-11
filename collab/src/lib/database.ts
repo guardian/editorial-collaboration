@@ -77,6 +77,12 @@ class Database {
       .then((sql: Sql) => sql`INSERT INTO step ${ sql(values) }`)
       .catch(err => console.error(err)) // TODO: logging/alerting
   };
+
+  public getSteps = async (id: string) => {
+    return await this.connect()
+      .then((sql: Sql) => sql`SELECT content FROM step WHERE id=${id}`)
+      .catch(err => console.error(err)) // TODO: logging/alerting
+  }
 }
 
 const database = new Database();
