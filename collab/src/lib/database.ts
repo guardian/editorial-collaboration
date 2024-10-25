@@ -1,4 +1,4 @@
-import type { Sql } from 'postgres';
+import type { Row, Sql } from 'postgres';
 import postgres from 'postgres';
 import { STAGE } from '../constants';
 import type { Json } from '../types/json';
@@ -23,6 +23,14 @@ const isDatabaseConfig = (json: Json): json is DatabaseConfig => {
     "database" in json && typeof json["database"] === 'string' &&
     "username" in json && typeof json["username"] === 'string' &&
     "password" in json && typeof json["password"] === 'string'
+  );
+};
+
+const isDocument = (row?: Row | null): row is { document: Json } => {
+  return (
+    typeof row === "object" &&
+    row != null &&
+    "document" in row
   );
 };
 
@@ -92,17 +100,19 @@ class Database {
     }
   };
 
-  public getSteps = async (id: string) => {
-    return await this.connect()
+  public getSteps = async (id: string) =>
+    await this.connect()
       .then((sql: Sql) => sql`SELECT content FROM step WHERE id=${id}`)
       .catch(err => console.error(err)) // TODO: logging/alerting
-  }
 
-  public getDocument = async (id: string) => {
-    return await this.connect()
+  public getDocument = async (id: string) =>
+    await this.connect()
       .then((sql: Sql) => sql`SELECT document FROM document WHERE id=${id}`)
-      .catch(err => console.error(err)) // TODO: logging/alerting
-  }
+      .then(result => {
+        if (result.length > 0 && isDocument(result[0])) {
+          return result[0].document;
+        } return null;
+      }).catch(err => console.error(err)) // TODO: logging/alerting
 }
 
 const database = new Database();

@@ -25,7 +25,7 @@ app.get('/healthcheck', (req: Request, res: Response) => {
 app.post('/document/:id/steps', authMiddleware, async (req: Request, res: Response) => {
   const requestBody = req.body as Json;
   const { id } = req.params;
-  const parsedSteps = parseSteps(requestBody)
+  const parsedSteps = parseSteps(requestBody);
 
   if (typeof parsedSteps === 'undefined') {
     res.status(400);
@@ -74,7 +74,7 @@ app.get('/document/:id/steps', authMiddleware, async (req: Request, res: Respons
 
   if (id !== undefined) {
     await database.getSteps(id).then((steps) => {
-      res.status(202);
+      res.status(200);
       res.send(steps);
     }).catch(() => {
       res.status(500);
@@ -90,9 +90,14 @@ app.get('/document/:id', authMiddleware, async (req: Request, res: Response) => 
   const { id } = req.params;
 
   if (id !== undefined) {
-    await database.getDocument(id).then((steps) => {
-      res.status(202);
-      res.send(steps);
+    await database.getDocument(id).then((doc) => {
+      if (doc != null) {
+        res.status(200);
+        res.send(doc);
+      } else {
+        res.status(404);
+        res.send('Not found');
+      }
     }).catch(() => {
       res.status(500);
       res.send('Error retrieving document from database');

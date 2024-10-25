@@ -20,7 +20,7 @@ const loader = async ({ params }: { params: Params }) => {
           return { error: String(error) }
         });
 
-  const document = await fetch(`https://editorial-collaboration.local.dev-gutools.co.uk/document/${id}`, {
+  const doc = await fetch(`https://editorial-collaboration.local.dev-gutools.co.uk/document/${id}`, {
     mode: 'cors',
     credentials: 'include'
   }).then((res) => res.json() as unknown)
@@ -28,7 +28,7 @@ const loader = async ({ params }: { params: Params }) => {
       return { error: String(error) }
     });
 
-  return { steps, document }
+  return { steps, doc }
 };
 
 const router = createBrowserRouter([{
