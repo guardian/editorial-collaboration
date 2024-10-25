@@ -25,7 +25,7 @@ const Editor: React.FunctionComponent = () => {
       const version = 1;
       const doc = Node.fromJSON(schema, data.doc);
       const state = EditorState.create({ doc, schema, plugins: [collab({ clientID, version })]});
-      const view = new EditorView(editor.current, {state});
+      const view = new EditorView(editor.current, {state, attributes: { contentEditable: 'false' }});
       const steps = data.steps.map(step => Step.fromJSON(schema, step.content));
       const transaction = receiveTransaction(state, steps, []);
       view.dispatch(transaction);
