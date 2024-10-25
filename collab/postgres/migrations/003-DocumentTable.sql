@@ -1,0 +1,1 @@
+CREATE TABLE document(id VARCHAR(50) NOT NULL, timestamp TIMESTAMP(6) NOT NULL, document jsonb NOT NULL);

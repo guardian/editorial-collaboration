@@ -78,9 +78,29 @@ class Database {
       .catch(err => console.error(err)) // TODO: logging/alerting
   };
 
+  public saveDocument = async (id: string, document: Json) => {
+    const timestamp: number = Date.now();
+    const values = { id, timestamp, document }
+    const existingDoc = await this.connect()
+      .then((sql: Sql) => sql`SELECT document FROM document WHERE id=${id}`)
+      .catch(err => console.error(err)); // TODO: logging/alerting;
+
+    if (existingDoc == null || existingDoc.length === 0) {
+      await this.connect()
+        .then((sql: Sql) => sql`INSERT INTO document ${ sql(values) }`)
+        .catch(err => console.error(err)) // TODO: logging/alerting
+    }
+  };
+
   public getSteps = async (id: string) => {
     return await this.connect()
       .then((sql: Sql) => sql`SELECT content FROM step WHERE id=${id}`)
+      .catch(err => console.error(err)) // TODO: logging/alerting
+  }
+
+  public getDocument = async (id: string) => {
+    return await this.connect()
+      .then((sql: Sql) => sql`SELECT document FROM document WHERE id=${id}`)
       .catch(err => console.error(err)) // TODO: logging/alerting
   }
 }

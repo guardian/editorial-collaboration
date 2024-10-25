@@ -12,14 +12,24 @@ const root = createRoot(rootNode);
 
 const loader = async ({ params }: { params: Params }) => {
       const id = params['id'] ?? '';
-      return await fetch(`https://editorial-collaboration.local.dev-gutools.co.uk/document/${id}/steps`, {
+      const steps = await fetch(`https://editorial-collaboration.local.dev-gutools.co.uk/document/${id}/steps`, {
         mode: 'cors',
         credentials: 'include'
       }).then((res) => res.json() as unknown)
         .catch((error) => {
           return { error: String(error) }
         });
-    };
+
+  const document = await fetch(`https://editorial-collaboration.local.dev-gutools.co.uk/document/${id}`, {
+    mode: 'cors',
+    credentials: 'include'
+  }).then((res) => res.json() as unknown)
+    .catch((error) => {
+      return { error: String(error) }
+    });
+
+  return { steps, document }
+};
 
 const router = createBrowserRouter([{
   path: '/:id',

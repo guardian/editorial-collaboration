@@ -46,7 +46,27 @@ app.post('/document/:id/steps', authMiddleware, async (req: Request, res: Respon
     res.status(500);
     res.send('Error saving steps to database');
   })
+});
 
+app.post('/document/:id/register', authMiddleware, async (req: Request, res: Response) => {
+  const requestBody = req.body as Json;
+  const { id } = req.params;
+
+  // TODO - type validation of request body
+
+  if (id == null) {
+    res.status(400);
+    res.send('Missing required ID parameter');
+    return;
+  }
+
+  await database.saveDocument(id, requestBody).then(() => {
+    res.status(202);
+    res.send('Received');
+  }).catch(() => {
+    res.status(500);
+    res.send('Error saving document to database');
+  })
 });
 
 app.get('/document/:id/steps', authMiddleware, async (req: Request, res: Response) => {
@@ -58,7 +78,24 @@ app.get('/document/:id/steps', authMiddleware, async (req: Request, res: Respons
       res.send(steps);
     }).catch(() => {
       res.status(500);
-      res.send('Error saving steps to database');
+      res.send('Error retrieving steps from database');
+    })
+  } else {
+    res.status(400)
+    res.send('No content id provided');
+  }
+});
+
+app.get('/document/:id', authMiddleware, async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  if (id !== undefined) {
+    await database.getDocument(id).then((steps) => {
+      res.status(202);
+      res.send(steps);
+    }).catch(() => {
+      res.status(500);
+      res.send('Error retrieving document from database');
     })
   } else {
     res.status(400)
