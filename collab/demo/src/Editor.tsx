@@ -3,7 +3,7 @@ import { collab, receiveTransaction } from 'prosemirror-collab';
 import { Node } from 'prosemirror-model';
 import { EditorState } from 'prosemirror-state';
 import { Step } from 'prosemirror-transform';
-import { EditorView } from 'prosemirror-view';
+import { Decoration, DecorationSet, EditorView } from 'prosemirror-view';
 import React, { useEffect, useRef, useState } from 'react';
 import { useLoaderData } from 'react-router-dom';
 import type { Json } from "../../src/types/json";
@@ -14,6 +14,8 @@ type Content = {
   slice?: {
     content: unknown;
   };
+  to: number;
+  from: number;
 }
 
 const style = {
@@ -31,6 +33,8 @@ const style = {
     display: 'flex',
     flexDirection: 'column',
     gap: '5px',
+    height: '400px',
+    overflowY: 'scroll',
   }),
   button: css({
     width: 'fit-content',
@@ -53,15 +57,21 @@ const Editor: React.FunctionComponent = () => {
       initialised.current = true;
       const view = new EditorView(editor.current, { state: initialState, attributes });
       setView(view);
-      data.steps.forEach(step => console.log(JSON.stringify(step)));
+      // data.steps.forEach(step => console.log(JSON.stringify(step)));
       const steps = data.steps.map(step => Step.fromJSON(schema, step.content));
       const transaction = receiveTransaction(initialState, steps, []);
       view.dispatch(transaction);
     }
   }, []);
 
-  const onClick = (index: number) => {
-    view?.setProps({state: initialState, attributes });
+  const onClick = (index: number, content: Content) => {
+    const { from, to } = content;
+    const decorations: Decoration[] = [Decoration.inline(from, to + 2, { style: 'background-color:#d0f7da;white-space:pre' })];
+    view?.setProps({
+      state: initialState,
+      attributes,
+      decorations: (state: EditorState) => DecorationSet.create(state.doc, decorations)
+    });
     const stepsToApply = data.steps.slice(0, index + 1);
     const steps = stepsToApply.map(step => Step.fromJSON(schema, step.content));
     const transaction = receiveTransaction(initialState, steps, []);
@@ -75,7 +85,7 @@ const Editor: React.FunctionComponent = () => {
         const date = new Date(step.timestamp);
         const dateString = `${date.getDay()} ${MONTH[date.getMonth() - 1]}, ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`
         return (
-          <button key={index} css={style.button} onClick={() => onClick(index)}>
+          <button key={index} css={style.button} onClick={() => onClick(index, step.content)}>
             {`${dateString} - ${JSON.stringify(step.content.slice?.content)}`}
           </button>
         );
