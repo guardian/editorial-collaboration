@@ -102,7 +102,7 @@ class Database {
 
   public getSteps = async (id: string) =>
     await this.connect()
-      .then((sql: Sql) => sql`SELECT content FROM step WHERE id=${id}`)
+      .then((sql: Sql) => sql`SELECT timestamp, content FROM step WHERE id=${id}`)
       .catch(err => console.error(err)) // TODO: logging/alerting
 
   public getDocument = async (id: string) =>
