@@ -41,6 +41,8 @@ const style = {
   })
 }
 
+const isDeletion = (from: number, to: number): boolean => to > from
+
 const Editor: React.FunctionComponent = () => {
   const data = useLoaderData() as { steps: Array<{ content: Content; timestamp: string }>; doc: Json };
   const clientID = 'test';
@@ -57,7 +59,7 @@ const Editor: React.FunctionComponent = () => {
       initialised.current = true;
       const view = new EditorView(editor.current, { state: initialState, attributes });
       setView(view);
-      // data.steps.forEach(step => console.log(JSON.stringify(step)));
+      data.steps.forEach(step => console.log(JSON.stringify(step)));
       const steps = data.steps.map(step => Step.fromJSON(schema, step.content));
       const transaction = receiveTransaction(initialState, steps, []);
       view.dispatch(transaction);
@@ -66,13 +68,16 @@ const Editor: React.FunctionComponent = () => {
 
   const onClick = (index: number, content: Content) => {
     const { from, to } = content;
-    const decorations: Decoration[] = [Decoration.inline(from, to + 2, { style: 'background-color:#d0f7da;white-space:pre' })];
+    const deleting = isDeletion(from, to);
+    const decorations: Decoration[] = deleting ?
+      [Decoration.inline(from, to + 2, { style: 'color:#00826a;white-space:pre;text-decoration:line-through' })] :
+      [Decoration.inline(from, to + 2, { style: 'color:#00826a;background-color:#dcf5f0;white-space:pre' })];
     view?.setProps({
       state: initialState,
       attributes,
       decorations: (state: EditorState) => DecorationSet.create(state.doc, decorations)
     });
-    const stepsToApply = data.steps.slice(0, index + 1);
+    const stepsToApply = data.steps.slice(0, deleting ? index + 1 + (from - to) : index + 1);
     const steps = stepsToApply.map(step => Step.fromJSON(schema, step.content));
     const transaction = receiveTransaction(initialState, steps, []);
     view?.dispatch(transaction);
