@@ -50,12 +50,23 @@ const style = {
   })
 }
 
-const groupSteps = (steps: Steps): Selection[] => {
-  const length = steps.length;
-  return [
-    { from: 0, to: Math.floor(length / 2) },
-    { from: Math.floor(length / 2), to: length + 1 }
-  ];
+const getSelections = (steps: Steps): Selection[] => {
+  const selection: Selection[] = [];
+  const increment = 300000 // 5 minutes in milliseconds
+  if (steps[0] != null) {
+    let currentDate = new Date(steps[0].timestamp).valueOf();
+    let currentIndex = 0;
+    steps.forEach((step, index) => {
+      const dateToCompare = new Date(step.timestamp).valueOf();
+      if (dateToCompare > currentDate + increment) {
+        selection.push({ from: currentIndex, to: index });
+        currentDate = dateToCompare;
+        currentIndex = index;
+      }
+    });
+    selection.push({ from: currentIndex, to: steps.length + 1 })
+  }
+  return selection;
 }
 
 const Editor: React.FunctionComponent = () => {
@@ -110,7 +121,7 @@ const Editor: React.FunctionComponent = () => {
   return (
     <div css={style.container}>
       <div css={style.editor} ref={editor} />
-      <div css={style.history}>{groupSteps(data.steps).map((selection, index) => {
+      <div css={style.history}>{getSelections(data.steps).map((selection, index) => {
         const firstStep = data.steps[selection.from];
         if (firstStep != null) {
           const date = new Date(firstStep.timestamp);
