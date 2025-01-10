@@ -52,15 +52,18 @@ const style = {
 
 const getSelections = (steps: Steps): Selection[] => {
   const selection: Selection[] = [];
-  const increment = 300000 // 5 minutes in milliseconds
+  const oneMinute = 60000;
+  const fiveMinutes = oneMinute * 5;
+  // const oneHour = fiveMinutes * 12;
+  // const oneDay = oneHour * 24;
   if (steps[0] != null) {
-    let currentDate = new Date(steps[0].timestamp).valueOf();
+    let startDate = new Date(steps[0].timestamp).valueOf();
     let currentIndex = 0;
     steps.forEach((step, index) => {
       const dateToCompare = new Date(step.timestamp).valueOf();
-      if (dateToCompare > currentDate + increment) {
+      if (dateToCompare > startDate + fiveMinutes) {
         selection.push({ from: currentIndex, to: index });
-        currentDate = dateToCompare;
+        startDate = dateToCompare;
         currentIndex = index;
       }
     });
@@ -100,6 +103,7 @@ const Editor: React.FunctionComponent = () => {
     const stepMaps: StepMap[] = steps.map(step => step.getMap());
     const changeSet = ChangeSet.create(state.doc).addSteps(state.doc, stepMaps, data);
     const simplifiedChangeSet = simplifyChanges(changeSet.changes, changeSet.startDoc);
+    console.log(JSON.stringify(simplifiedChangeSet));
 
     // Apply text decorations to insertions and deletions.
     const decorations: Decoration[] = simplifiedChangeSet.map(change => [
@@ -125,9 +129,11 @@ const Editor: React.FunctionComponent = () => {
         const firstStep = data.steps[selection.from];
         if (firstStep != null) {
           const date = new Date(firstStep.timestamp);
+          const hours = date.getHours();
+          const minutes = date.getMinutes();
           return (
             <button key={index} css={style.button} onClick={() => onClick(selection)}>
-              {`${date.getDate()} ${MONTH[date.getMonth()]}, ${date.getHours()}:${date.getMinutes()}`}
+              {`${date.getDate()} ${MONTH[date.getMonth()]}, ${hours < 10 ? `0${hours}` : hours}:${minutes < 10 ? `0${minutes}` : minutes}`}
             </button>
           );
         }
