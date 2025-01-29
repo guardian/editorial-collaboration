@@ -20,7 +20,7 @@ type Content = {
   from: number;
 }
 
-type Steps = Array<{ content: Content; timestamp: string }>;
+type Steps = Array<{ content: Content; timestamp: string; user?: { firstName: string; lastName: string; email: string } }>;
 
 type Selection = {
   from: number;
@@ -121,10 +121,13 @@ const Editor: React.FunctionComponent = () => {
     const transaction = receiveTransaction(state, steps, []);
 
     // Create a changeset for the current history selection.
-    const newSteps: Step[] = data.steps.slice(selection.from, selection.to).map(step => Step.fromJSON(schema, step.content));
+    const newStepsSelection = data.steps.slice(selection.from, selection.to);
+    const newSteps: Step[] = newStepsSelection.map(step => Step.fromJSON(schema, step.content));
     const newStepMaps: StepMap[] = newSteps.map(step => step.getMap());
-    const changeSet = ChangeSet.create(state.doc).addSteps(state.doc, newStepMaps, {});
+    const newStepData = newStepsSelection.map(step => step.user);
+    const changeSet = ChangeSet.create(state.doc).addSteps(state.doc, newStepMaps, newStepData);
     const simplifiedChangeSet = simplifyChanges(changeSet.changes, changeSet.startDoc);
+    console.log(JSON.stringify(simplifiedChangeSet));
 
     const offsets: Offset[] = [];
     simplifiedChangeSet.forEach(set => {
@@ -139,7 +142,10 @@ const Editor: React.FunctionComponent = () => {
 
     // Apply text decorations to insertions and deletions.
     const decorations: Decoration[] = simplifiedChangeSet.map(change => [
-      Decoration.inline(applyOffsets(offsets, change.fromB), applyOffsets(offsets, change.toB), { style: 'color:#00826a;background-color:#dcf5f0;white-space:pre' }),
+      Decoration.inline(applyOffsets(offsets, change.fromB), applyOffsets(offsets, change.toB), {
+        style: 'color:#00826a;background-color:#dcf5f0;white-space:pre',
+        title: `${JSON.stringify(change.inserted.map(i => i.data).pop())}`
+      }),
       Decoration.inline(change.fromA, change.toA, { style: 'color:#00826a;white-space:pre;text-decoration:line-through' })
     ]).flat();
 
