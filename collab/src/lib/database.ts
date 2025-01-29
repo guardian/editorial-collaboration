@@ -1,3 +1,4 @@
+import type { User } from "@guardian/pan-domain-node";
 import type { Row, Sql } from 'postgres';
 import postgres from 'postgres';
 import { STAGE } from '../constants';
@@ -78,9 +79,9 @@ class Database {
     }
   };
 
-  public saveSteps = async (id: string, steps: StepModel[]) => {
+  public saveSteps = async (id: string, steps: StepModel[], user: User) => {
     const timestamp: number = Date.now();
-    const values = steps.map(step => { return { id, timestamp, content: step }})
+    const values = steps.map(step => { return { id, timestamp, content: step, user: { email: user.email, firstName: user.firstName, lastName: user.lastName }}});
     await this.connect()
       .then((sql: Sql) => sql`INSERT INTO step ${ sql(values) }`)
       .catch(err => console.error(err)) // TODO: logging/alerting

@@ -1,18 +1,19 @@
+import type { User } from "@guardian/pan-domain-node";
 import type { Request, Response } from "express";
 import { mocked } from "jest-mock";
-import { getVerifiedUserEmail } from "../panDomainAuth";
+import { getVerifiedUser } from "../panDomainAuth";
 import { authMiddleware } from "./auth-middleware";
 
 interface MockResponse extends Response {
     locals: {
-        userEmail?: string;
+        user?: User;
     };
     status: jest.Mock;
 }
 
 jest.mock("../panDomainAuth");
 jest.mock("@guardian/pan-domain-node")
-const mockGetVerifiedUserEmailFunction = mocked(getVerifiedUserEmail);
+const mockGetVerifiedUserFunction = mocked(getVerifiedUser);
 const mockNextFunction = jest.fn();
 
 const getMockRequest = (header: string | undefined) => {
@@ -49,7 +50,7 @@ describe("auth-middleware", () => {
         const mockRequest = getMockRequest("mock-panda-cookie");
         const mockResponse = getMockResponse();
 
-        mockGetVerifiedUserEmailFunction.mockResolvedValueOnce(null);
+        mockGetVerifiedUserFunction.mockResolvedValueOnce(null);
         await authMiddleware(mockRequest, mockResponse, mockNextFunction);
 
         expect(mockResponse.status).toHaveBeenCalledWith(403);
@@ -61,11 +62,11 @@ describe("auth-middleware", () => {
         const mockRequest = getMockRequest("mock-panda-cookie");
         const mockResponse = getMockResponse();
 
-        mockGetVerifiedUserEmailFunction.mockResolvedValueOnce("jane.doe@guardian.co.uk");
+        mockGetVerifiedUserFunction.mockResolvedValueOnce({ email: "jane.doe@guardian.co.uk" } as User);
         await authMiddleware(mockRequest, mockResponse, mockNextFunction);
 
         expect(mockResponse.status).not.toHaveBeenCalled();
-        expect(mockResponse.locals["userEmail"]).toBe("jane.doe@guardian.co.uk");
+        expect(mockResponse.locals["user"]).toStrictEqual({ email: "jane.doe@guardian.co.uk" });
         expect(mockNextFunction).toHaveBeenCalledTimes(1);
     });
 });

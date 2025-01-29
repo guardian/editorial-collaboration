@@ -1,3 +1,4 @@
+import type { User } from "@guardian/pan-domain-node";
 import {
     AuthenticationStatus,
     guardianValidation,
@@ -18,9 +19,9 @@ const panda = new PanDomainAuthentication(
     guardianValidation
 );
 
-export const getVerifiedUserEmail = async (
+export const getVerifiedUser = async (
     cookieHeader: string
-): Promise<null | string> => {
+): Promise<null | User> => {
     const { status, user } = await panda.verify(cookieHeader);
-    return status === AuthenticationStatus.AUTHORISED && user !== undefined ? user.email : null;
+    return status === AuthenticationStatus.AUTHORISED && user !== undefined ? user : null;
 };
