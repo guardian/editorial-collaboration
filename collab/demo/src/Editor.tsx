@@ -27,6 +27,11 @@ type Selection = {
   to: number;
 }
 
+type Offset = {
+  index: number;
+  length: number;
+}
+
 const style = {
   container: css({
     display: 'flex',
@@ -72,6 +77,16 @@ const getSelections = (steps: Steps): Selection[] => {
   return selection;
 }
 
+const applyOffsets = (offsets: Offset[], index: number) => {
+  let newIndex = index;
+  offsets.forEach(offset => {
+    if (offset.index < index) {
+      newIndex += offset.length;
+    }
+  })
+  return newIndex;
+}
+
 const Editor: React.FunctionComponent = () => {
   const data = useLoaderData() as { steps: Steps; doc: Json };
   const clientID = 'test';
@@ -95,31 +110,48 @@ const Editor: React.FunctionComponent = () => {
   }, []);
 
   const onClick = (selection: Selection) => {
-    // Reset the editor state
-    const state: EditorState = EditorState.create({ doc, schema, plugins: [collab({ clientID, version })]});
+    // Apply the steps up to the point of the start of the current history selection.
+    const prevState: EditorState = EditorState.create({ doc, schema, plugins: [collab({ clientID, version })]});
+    const prevSteps = data.steps.slice(0, selection.from).map(step => Step.fromJSON(schema, step.content));
+    const prevTransaction = receiveTransaction(prevState, prevSteps, []);
 
-    // Generate a simplified changeset grouping steps into insertions and deletions.
-    const steps: Step[] = data.steps.slice(selection.from, selection.to).map(step => Step.fromJSON(schema, step.content));
-    const stepMaps: StepMap[] = steps.map(step => step.getMap());
-    const changeSet = ChangeSet.create(state.doc).addSteps(state.doc, stepMaps, data);
+    // Apply the new state, including the current history selection.
+    const state: EditorState = EditorState.create({ doc, schema, plugins: [collab({ clientID, version })]});
+    const steps = data.steps.slice(0, selection.to).map(step => Step.fromJSON(schema, step.content));
+    const transaction = receiveTransaction(state, steps, []);
+
+    // Create a changeset for the current history selection.
+    const newSteps: Step[] = data.steps.slice(selection.from, selection.to).map(step => Step.fromJSON(schema, step.content));
+    const newStepMaps: StepMap[] = newSteps.map(step => step.getMap());
+    const changeSet = ChangeSet.create(state.doc).addSteps(state.doc, newStepMaps, {});
     const simplifiedChangeSet = simplifyChanges(changeSet.changes, changeSet.startDoc);
-    console.log(JSON.stringify(simplifiedChangeSet));
+
+    const offsets: Offset[] = [];
+    simplifiedChangeSet.forEach(set => {
+      if (set.deleted.some(deletion => deletion.length > 0)) {
+        const from = set.fromA - 2;
+        const to = set.toA - 2;
+        const deletedText = prevTransaction.doc.textContent.slice(from, to);
+        transaction.insertText(deletedText, set.fromA);
+        offsets.push({ index: from, length: deletedText.length });
+      }
+    });
 
     // Apply text decorations to insertions and deletions.
     const decorations: Decoration[] = simplifiedChangeSet.map(change => [
-      Decoration.inline(change.fromB, change.toB, { style: 'color:#00826a;background-color:#dcf5f0;white-space:pre' }),
+      Decoration.inline(applyOffsets(offsets, change.fromB), applyOffsets(offsets, change.toB), { style: 'color:#00826a;background-color:#dcf5f0;white-space:pre' }),
       Decoration.inline(change.fromA, change.toA, { style: 'color:#00826a;white-space:pre;text-decoration:line-through' })
     ]).flat();
 
     // Apply the changes to the editor view.
-    view?.setProps({
-      state,
-      attributes,
-      decorations: (state: EditorState) => DecorationSet.create(state.doc, decorations)
-    });
-    const stepsToApply = data.steps.slice(0, selection.to).map(step => Step.fromJSON(schema, step.content));
-    const transaction = receiveTransaction(state, stepsToApply, []);
-    view?.dispatch(transaction);
+    if (steps.length > 0) {
+      view?.setProps({
+        state,
+        attributes,
+        decorations: (state: EditorState) => DecorationSet.create(state.doc, decorations)
+      });
+      view?.dispatch(transaction);
+    }
   }
 
   return (
