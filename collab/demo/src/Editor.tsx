@@ -58,7 +58,7 @@ const style = {
 const getSelections = (steps: Steps): Selection[] => {
   const selection: Selection[] = [];
   const oneMinute = 60000;
-  const fiveMinutes = oneMinute * 5;
+  // const fiveMinutes = oneMinute * 5;
   // const oneHour = fiveMinutes * 12;
   // const oneDay = oneHour * 24;
   if (steps[0] != null) {
@@ -66,7 +66,7 @@ const getSelections = (steps: Steps): Selection[] => {
     let currentIndex = 0;
     steps.forEach((step, index) => {
       const dateToCompare = new Date(step.timestamp).valueOf();
-      if (dateToCompare > startDate + fiveMinutes) {
+      if (dateToCompare > startDate + oneMinute) {
         selection.push({ from: currentIndex, to: index });
         startDate = dateToCompare;
         currentIndex = index;
@@ -127,8 +127,8 @@ const Editor: React.FunctionComponent = () => {
     const newStepData = newStepsSelection.map(step => step.user);
     const changeSet = ChangeSet.create(state.doc).addSteps(state.doc, newStepMaps, newStepData);
     const simplifiedChangeSet = simplifyChanges(changeSet.changes, changeSet.startDoc);
-    console.log(JSON.stringify(simplifiedChangeSet));
 
+    // Re-insert deletions into the document. Keep a record of the deletion offsets, which need to be applied when decorating insertions.
     const offsets: Offset[] = [];
     simplifiedChangeSet.forEach(set => {
       if (set.deleted.some(deletion => deletion.length > 0)) {
@@ -146,7 +146,10 @@ const Editor: React.FunctionComponent = () => {
         style: 'color:#00826a;background-color:#dcf5f0;white-space:pre',
         title: `${JSON.stringify(change.inserted.map(i => i.data).pop())}`
       }),
-      Decoration.inline(change.fromA, change.toA, { style: 'color:#00826a;white-space:pre;text-decoration:line-through' })
+      Decoration.inline(change.fromA, change.toA, {
+        style: 'color:#00826a;white-space:pre;text-decoration:line-through',
+        title: `${JSON.stringify(change.deleted.map(i => i.data).pop())}`
+      })
     ]).flat();
 
     // Apply the changes to the editor view.
