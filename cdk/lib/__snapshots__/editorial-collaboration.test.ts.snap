@@ -4,6 +4,7 @@ exports[`The EditorialCollaboration stack matches the snapshot 1`] = `
 {
   "Metadata": {
     "gu:cdk:constructs": [
+      "GuAllowPolicy",
       "GuVpcParameter",
       "GuSubnetListParameter",
       "GuSubnetListParameter",
@@ -828,6 +829,27 @@ exports[`The EditorialCollaboration stack matches the snapshot 1`] = `
         "ToPort": 3000,
       },
       "Type": "AWS::EC2::SecurityGroupEgress",
+    },
+    "PanDomainPolicyB981546E": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "s3:GetObject",
+              "Effect": "Allow",
+              "Resource": "arn:aws:s3:::pan-domain-auth-settings/*",
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "PanDomainPolicyB981546E",
+        "Roles": [
+          {
+            "Ref": "InstanceRoleEditorialcollaborationAEA7F45C",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
     },
     "ParameterStoreReadEditorialcollaborationF9082F05": {
       "Properties": {

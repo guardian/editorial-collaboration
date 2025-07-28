@@ -4,6 +4,7 @@ import type { GuStackProps } from '@guardian/cdk/lib/constructs/core';
 import { GuStack } from '@guardian/cdk/lib/constructs/core';
 import { GuCname } from '@guardian/cdk/lib/constructs/dns';
 import { GuSecurityGroup, GuVpc } from '@guardian/cdk/lib/constructs/ec2';
+import { GuAllowPolicy } from '@guardian/cdk/lib/constructs/iam';
 import { GuDatabaseInstance } from '@guardian/cdk/lib/constructs/rds';
 import type { App } from 'aws-cdk-lib';
 import { Duration, aws_rds as rds, RemovalPolicy } from 'aws-cdk-lib';
@@ -42,6 +43,14 @@ export class EditorialCollaboration extends GuStack {
 			scaling: {
 				minimumInstances: 1,
 				maximumInstances: 2,
+			},
+			roleConfiguration: {
+				additionalPolicies: [
+					new GuAllowPolicy(this, 'PanDomainPolicy', {
+						resources: ['arn:aws:s3:::pan-domain-auth-settings/*'],
+						actions: ['s3:GetObject'],
+					}),
+				],
 			},
 			userData: {
 				distributable: {
