@@ -9,6 +9,7 @@ describe('The EditorialCollaboration stack', () => {
 			stack: 'composer',
 			stage: 'TEST',
 			domainName: 'test.dev-gutools.co.uk',
+			env: { region: 'eu-west-1' },
 		});
 		const template = Template.fromStack(stack);
 		expect(template.toJSON()).toMatchSnapshot();
