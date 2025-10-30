@@ -9,20 +9,20 @@ exports[`The EditorialCollaboration stack matches the snapshot 1`] = `
       "GuSubnetListParameter",
       "GuSubnetListParameter",
       "GuEc2App",
+      "GuDistributionBucketParameter",
       "GuCertificate",
       "GuInstanceRole",
       "GuSsmSshPolicy",
       "GuDescribeEC2Policy",
       "GuLoggingStreamNameParameter",
       "GuLogShippingPolicy",
-      "GuDistributionBucketParameter",
       "GuGetDistributablePolicy",
       "GuParameterStoreReadPolicy",
       "GuAmiParameter",
       "GuHttpsEgressSecurityGroup",
-      "GuWazuhAccess",
       "GuAutoScalingGroup",
       "GuApplicationLoadBalancer",
+      "GuAccessLoggingBucketParameter",
       "GuApplicationTargetGroup",
       "GuHttpsApplicationListener",
       "GuCname",
@@ -47,6 +47,11 @@ exports[`The EditorialCollaboration stack matches the snapshot 1`] = `
     "AMIEditorialcollaboration": {
       "Description": "Amazon Machine Image ID for the app editorial-collaboration. Use this in conjunction with AMIgo to keep AMIs up to date.",
       "Type": "AWS::EC2::Image::Id",
+    },
+    "AccessLoggingBucket": {
+      "Default": "/account/services/access-logging/bucket",
+      "Description": "S3 bucket to store your access logs",
+      "Type": "AWS::SSM::Parameter::Value<String>",
     },
     "DistributionBucketName": {
       "Default": "/account/services/artifact.bucket",
@@ -96,6 +101,11 @@ exports[`The EditorialCollaboration stack matches the snapshot 1`] = `
           },
         },
         "MaxSize": "2",
+        "MetricsCollection": [
+          {
+            "Granularity": "1Minute",
+          },
+        ],
         "MinSize": "1",
         "Tags": [
           {
@@ -236,27 +246,6 @@ exports[`The EditorialCollaboration stack matches the snapshot 1`] = `
         "SourceSecurityGroupId": {
           "Fn::GetAtt": [
             "GuHttpsEgressSecurityGroupEditorialcollaborationB5EB9593",
-            "GroupId",
-          ],
-        },
-        "ToPort": 5432,
-      },
-      "Type": "AWS::EC2::SecurityGroupIngress",
-    },
-    "DBSecurityGroupEditorialcollaborationfromEditorialCollaborationWazuhSecurityGroup4E797D24543266AFA3F2": {
-      "Properties": {
-        "Description": "Allow connections from EC2 instance to DB",
-        "FromPort": 5432,
-        "GroupId": {
-          "Fn::GetAtt": [
-            "DBSecurityGroupEditorialcollaborationDF4493EF",
-            "GroupId",
-          ],
-        },
-        "IpProtocol": "tcp",
-        "SourceSecurityGroupId": {
-          "Fn::GetAtt": [
-            "WazuhSecurityGroup",
             "GroupId",
           ],
         },
@@ -600,11 +589,7 @@ exports[`The EditorialCollaboration stack matches the snapshot 1`] = `
                 "Fn::Join": [
                   "",
                   [
-                    "arn:aws:kinesis:",
-                    {
-                      "Ref": "AWS::Region",
-                    },
-                    ":",
+                    "arn:aws:kinesis:eu-west-1:",
                     {
                       "Ref": "AWS::AccountId",
                     },
@@ -709,6 +694,20 @@ exports[`The EditorialCollaboration stack matches the snapshot 1`] = `
             "Key": "routing.http.drop_invalid_header_fields.enabled",
             "Value": "true",
           },
+          {
+            "Key": "access_logs.s3.enabled",
+            "Value": "true",
+          },
+          {
+            "Key": "access_logs.s3.bucket",
+            "Value": {
+              "Ref": "AccessLoggingBucket",
+            },
+          },
+          {
+            "Key": "access_logs.s3.prefix",
+            "Value": "application-load-balancer/TEST/composer/editorial-collaboration",
+          },
         ],
         "Scheme": "internet-facing",
         "SecurityGroups": [
@@ -809,27 +808,6 @@ exports[`The EditorialCollaboration stack matches the snapshot 1`] = `
       },
       "Type": "AWS::EC2::SecurityGroupEgress",
     },
-    "LoadBalancerEditorialcollaborationSecurityGrouptoEditorialCollaborationWazuhSecurityGroup4E797D2430004CD7EF50": {
-      "Properties": {
-        "Description": "Load balancer to target",
-        "DestinationSecurityGroupId": {
-          "Fn::GetAtt": [
-            "WazuhSecurityGroup",
-            "GroupId",
-          ],
-        },
-        "FromPort": 3000,
-        "GroupId": {
-          "Fn::GetAtt": [
-            "LoadBalancerEditorialcollaborationSecurityGroup43347B7A",
-            "GroupId",
-          ],
-        },
-        "IpProtocol": "tcp",
-        "ToPort": 3000,
-      },
-      "Type": "AWS::EC2::SecurityGroupEgress",
-    },
     "PanDomainPolicyB981546E": {
       "Properties": {
         "PolicyDocument": {
@@ -862,11 +840,7 @@ exports[`The EditorialCollaboration stack matches the snapshot 1`] = `
                 "Fn::Join": [
                   "",
                   [
-                    "arn:aws:ssm:",
-                    {
-                      "Ref": "AWS::Region",
-                    },
-                    ":",
+                    "arn:aws:ssm:eu-west-1:",
                     {
                       "Ref": "AWS::AccountId",
                     },
@@ -885,11 +859,7 @@ exports[`The EditorialCollaboration stack matches the snapshot 1`] = `
                 "Fn::Join": [
                   "",
                   [
-                    "arn:aws:ssm:",
-                    {
-                      "Ref": "AWS::Region",
-                    },
-                    ":",
+                    "arn:aws:ssm:eu-west-1:",
                     {
                       "Ref": "AWS::AccountId",
                     },
@@ -995,91 +965,6 @@ exports[`The EditorialCollaboration stack matches the snapshot 1`] = `
       },
       "Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
     },
-    "WazuhSecurityGroup": {
-      "Properties": {
-        "GroupDescription": "Allow outbound traffic from wazuh agent to manager",
-        "SecurityGroupEgress": [
-          {
-            "CidrIp": "0.0.0.0/0",
-            "Description": "Wazuh event logging",
-            "FromPort": 1514,
-            "IpProtocol": "tcp",
-            "ToPort": 1514,
-          },
-          {
-            "CidrIp": "0.0.0.0/0",
-            "Description": "Wazuh agent registration",
-            "FromPort": 1515,
-            "IpProtocol": "tcp",
-            "ToPort": 1515,
-          },
-        ],
-        "Tags": [
-          {
-            "Key": "gu:cdk:version",
-            "Value": "TEST",
-          },
-          {
-            "Key": "gu:repo",
-            "Value": "guardian/editorial-collaboration",
-          },
-          {
-            "Key": "Stack",
-            "Value": "composer",
-          },
-          {
-            "Key": "Stage",
-            "Value": "TEST",
-          },
-        ],
-        "VpcId": {
-          "Ref": "VpcId",
-        },
-      },
-      "Type": "AWS::EC2::SecurityGroup",
-    },
-    "WazuhSecurityGroupfromEditorialCollaborationLoadBalancerEditorialcollaborationSecurityGroupDDE175C1300066A87BFB": {
-      "Properties": {
-        "Description": "Load balancer to target",
-        "FromPort": 3000,
-        "GroupId": {
-          "Fn::GetAtt": [
-            "WazuhSecurityGroup",
-            "GroupId",
-          ],
-        },
-        "IpProtocol": "tcp",
-        "SourceSecurityGroupId": {
-          "Fn::GetAtt": [
-            "LoadBalancerEditorialcollaborationSecurityGroup43347B7A",
-            "GroupId",
-          ],
-        },
-        "ToPort": 3000,
-      },
-      "Type": "AWS::EC2::SecurityGroupIngress",
-    },
-    "WazuhSecurityGrouptoEditorialCollaborationDBSecurityGroupEditorialcollaboration37E069605432CE28DD4A": {
-      "Properties": {
-        "Description": "Allow connections from EC2 instance to DB",
-        "DestinationSecurityGroupId": {
-          "Fn::GetAtt": [
-            "DBSecurityGroupEditorialcollaborationDF4493EF",
-            "GroupId",
-          ],
-        },
-        "FromPort": 5432,
-        "GroupId": {
-          "Fn::GetAtt": [
-            "WazuhSecurityGroup",
-            "GroupId",
-          ],
-        },
-        "IpProtocol": "tcp",
-        "ToPort": 5432,
-      },
-      "Type": "AWS::EC2::SecurityGroupEgress",
-    },
     "composerTESTeditorialcollaborationF4717F5D": {
       "DependsOn": [
         "InstanceRoleEditorialcollaborationAEA7F45C",
@@ -1100,17 +985,15 @@ exports[`The EditorialCollaboration stack matches the snapshot 1`] = `
           "InstanceType": "t4g.micro",
           "MetadataOptions": {
             "HttpTokens": "required",
+            "InstanceMetadataTags": "enabled",
+          },
+          "Monitoring": {
+            "Enabled": false,
           },
           "SecurityGroupIds": [
             {
               "Fn::GetAtt": [
                 "GuHttpsEgressSecurityGroupEditorialcollaborationB5EB9593",
-                "GroupId",
-              ],
-            },
-            {
-              "Fn::GetAtt": [
-                "WazuhSecurityGroup",
                 "GroupId",
               ],
             },
