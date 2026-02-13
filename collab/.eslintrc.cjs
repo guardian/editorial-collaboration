@@ -19,5 +19,11 @@ module.exports = {
             ],
         },
       },
+      {
+        "files": ["demo.config.js"],
+        "env": {
+          "es6": true
+        }
+      }
     ],
   };
