@@ -12,13 +12,15 @@ type PostgresError = {
   code: string;
 }
 
+const host = process.env['db.host'] ?? '';
+
 const sql = postgres({
-  host: process.env['db.host'] ?? '',
+  host,
   port: parseInt(process.env['db.port'] ?? ''),
   database: process.env['db.database'] ?? '',
   username: process.env['db.username'] ?? '',
   password: process.env['db.password'] ?? '',
-  ssl: 'require',
+  ssl: host === 'localhost' ? 'prefer' : 'require',
 });
 
 const migrate = async () => {
