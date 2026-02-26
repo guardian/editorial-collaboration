@@ -20,7 +20,7 @@
     "@guardian/tsconfig": "^0.3.1",
     "@types/jest": "^29.5.12",
     "@types/node": "20.12.10",
-    "aws-cdk": "^2.1031.0",
+    "aws-cdk": "^2.1107.0",
     "aws-cdk-lib": "^2.240.0",
     "constructs": "^10.4.2",
     "eslint": "^8.57.0",
