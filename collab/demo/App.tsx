@@ -1,13 +1,14 @@
 import { css } from '@emotion/react';
+import { Editor } from './components/Editor';
 
 const style = css({
-  border: 'solid 1px black',
   margin: '5% auto',
-  width: '80%'
+  width: '80%',
+  height: '100vh',
 });
 
 const App = () => {
-  return <div css={style}>Editor goes here</div>;
+  return <div css={style}><Editor /></div>;
 }
 
 export { App };
