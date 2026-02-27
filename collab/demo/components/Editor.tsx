@@ -1,8 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { css } from '@emotion/react';
 import { schema } from 'prosemirror-schema-basic';
 import { EditorState } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
-import { css } from '@emotion/react';
+import { useEffect, useRef } from 'react';
 
 const EDITOR_CLASS = 'rich-text-editor';
 
