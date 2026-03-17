@@ -10,6 +10,11 @@ module.exports = {
                 exclude: /node_modules/,
             },
         ],
+        parser: {
+            javascript: {
+                dynamicImportMode: 'eager',
+            },
+        },
     },
     resolve: {
         extensions: ['.tsx', '.ts', '.js'],
