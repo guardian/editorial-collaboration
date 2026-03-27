@@ -73,3 +73,13 @@ app.post('/document/:id/register', authMiddleware, async (req: Request, res: Res
     res.send('Error saving document to database');
   })
 });
+
+app.get('/documents', authMiddleware, async (req: Request, res: Response) => {
+  await database.readDocuments().then(ids => {
+    res.status(200);
+    res.send(ids);
+  }).catch(() => {
+    res.status(500);
+    res.send('Error fetching document ids from database');
+  });
+});

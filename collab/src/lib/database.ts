@@ -85,12 +85,18 @@ class Database {
       .then((sql: Sql) => sql`SELECT document FROM document WHERE id=${id}`)
       .catch(err => console.error(err)); // TODO: logging/alerting;
 
-    if (existingDoc == null) {
+    if (existingDoc == null || existingDoc.length === 0) {
       await this.connect()
         .then((sql: Sql) => sql`INSERT INTO document ${ sql(values) }`)
         .catch(err => console.error(err)); // TODO: logging/alerting
     }
   };
+
+  public readDocuments = async () => {
+    return await this.connect()
+      .then((sql: Sql) => sql`SELECT * FROM document LIMIT 1000`)
+      .catch(err => console.error(err));
+  }
 }
 
 const database = new Database();
