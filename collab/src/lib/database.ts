@@ -77,6 +77,20 @@ class Database {
       .then((sql: Sql) => sql`INSERT INTO step ${ sql(values) }`)
       .catch(err => console.error(err)) // TODO: logging/alerting
   };
+
+  public saveDocument = async (id: string, document: Json) => {
+    const timestamp: number = Date.now();
+    const values = { id, timestamp, document }
+    const existingDoc = await this.connect()
+      .then((sql: Sql) => sql`SELECT document FROM document WHERE id=${id}`)
+      .catch(err => console.error(err)); // TODO: logging/alerting;
+
+    if (existingDoc == null) {
+      await this.connect()
+        .then((sql: Sql) => sql`INSERT INTO document ${ sql(values) }`)
+        .catch(err => console.error(err)); // TODO: logging/alerting
+    }
+  };
 }
 
 const database = new Database();

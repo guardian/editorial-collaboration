@@ -52,3 +52,24 @@ app.post('/document/:id/steps', authMiddleware, async (req: Request, res: Respon
   })
 
 });
+
+app.post('/document/:id/register', authMiddleware, async (req: Request, res: Response) => {
+  const requestBody = req.body as Json;
+  const { id } = req.params;
+
+  // TODO - type validation of request body / document
+
+  if (id == null) {
+    res.status(400);
+    res.send('Missing required ID parameter');
+    return;
+  }
+
+  await database.saveDocument(id, requestBody).then(() => {
+    res.status(202);
+    res.send('Received');
+  }).catch(() => {
+    res.status(500);
+    res.send('Error saving document to database');
+  })
+});
