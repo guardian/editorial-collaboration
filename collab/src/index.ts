@@ -26,7 +26,7 @@ app.get('/healthcheck', (req: Request, res: Response) => {
     res.send('OK');
 });
 
-app.post('/documents/:id/steps', authMiddleware, async (req: Request, res: Response) => {
+app.post('/document/:id/steps', authMiddleware, async (req: Request, res: Response) => {
   const requestBody = req.body as Json;
   const { id } = req.params;
   const parsedSteps = parseSteps(requestBody)
