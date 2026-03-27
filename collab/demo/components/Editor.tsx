@@ -26,10 +26,10 @@ const Editor = () => {
   useEffect(() => {
     if (!initialised.current) {
       initialised.current = true;
-      const editor = initialiseEditor(editorRef.current, attributes);
+      const editor = initialiseEditor(editorRef.current, attributes, documentId);
       editor.focus();
       registerDocument(documentId, editor)
-        .catch(err => console.error(err)); // TODO: logging/alerting;
+        .catch(err => console.error(err)); // TODO: logging/alerting
     }
   }, [documentId]);
 

@@ -1,0 +1,1 @@
+export const server = 'https://editorial-collaboration.local.dev-gutools.co.uk';

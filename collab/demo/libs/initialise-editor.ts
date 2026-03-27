@@ -8,15 +8,16 @@ import { StepSender } from "./step-sender";
 
 const initialiseEditor = (
   place: null | DOMNode | ((editor: HTMLElement) => void) | {mount: HTMLElement},
-  attributes: Record<string, string> | ((state: EditorState) => Record<string, string>)
+  attributes: Record<string, string> | ((state: EditorState) => Record<string, string>),
+  documentId: string,
 ) => {
   const plugins = [collab()];
   const state = EditorState.create({ schema, plugins });
-  const stepSender = new StepSender();
+  const stepSender = new StepSender(documentId);
   const view = new EditorView(place, { attributes, state, dispatchTransaction: (transaction: Transaction) => {
       const newState = view.state.apply(transaction);
-      stepSender.sendSteps(newState);
       view.updateState(newState);
+      stepSender.sendSteps(newState);
     }});
   stepSender.setView(view);
   return view;
