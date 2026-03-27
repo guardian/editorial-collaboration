@@ -14,7 +14,7 @@ module.exports = {
       'editorial-collaboration-demo.local.dev-gutools.co.uk',
     ],
     client: {
-      webSocketURL: "http://localhost:3001/ws",
+      webSocketURL: 'http://localhost:3001/ws',
     },
   },
   module: {
@@ -25,7 +25,8 @@ module.exports = {
           loader: 'babel-loader',
           options: {
             presets: [
-              ['@babel/preset-react', {"runtime": "automatic", "importSource": "@emotion/react"}],
+              ['@babel/preset-react', {'runtime': 'automatic', 'importSource': '@emotion/react'}],
+              '@babel/preset-typescript',
             ]
           }
         },

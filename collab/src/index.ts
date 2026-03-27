@@ -14,7 +14,7 @@ export const app = express();
 app.use(express.json());
 
 app.use((cors as (options: cors.CorsOptions) => express.RequestHandler)({
-  origin: `https://composer.${DOMAIN}`,
+  origin: [`https://composer.${DOMAIN}`, `https://editorial-collaboration-demo.${DOMAIN}`],
   credentials: true
 }));
 
