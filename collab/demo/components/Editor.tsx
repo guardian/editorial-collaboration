@@ -1,9 +1,7 @@
 import { css } from '@emotion/react';
-import { schema } from 'prosemirror-schema-basic';
-import { EditorState } from 'prosemirror-state';
-import { EditorView } from 'prosemirror-view';
 import { useEffect, useRef, useState } from 'react';
 import { v4 } from 'uuid';
+import { initialiseEditor } from '../libs/initialise-editor';
 import { registerDocument } from '../libs/register-document';
 
 const EDITOR_CLASS = 'rich-text-editor';
@@ -11,6 +9,7 @@ const EDITOR_CLASS = 'rich-text-editor';
 const style = css({
   border: 'solid 1px black',
   [`.${EDITOR_CLASS}`]: {
+    whiteSpace: 'pre-wrap',
     padding: '10px',
     ':focus-visible': {
       outline: 'none',
@@ -27,8 +26,7 @@ const Editor = () => {
   useEffect(() => {
     if (!initialised.current) {
       initialised.current = true;
-      const state = EditorState.create({schema});
-      const editor = new EditorView(editorRef.current, {state, attributes});
+      const editor = initialiseEditor(editorRef.current, attributes);
       editor.focus();
       registerDocument(documentId, editor)
         .catch(err => console.error(err)); // TODO: logging/alerting;

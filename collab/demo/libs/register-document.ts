@@ -1,7 +1,7 @@
 import type { EditorView } from 'prosemirror-view';
 
-const registerDocument = async (id: string, view: EditorView) => {
-  await fetch(`https://editorial-collaboration.local.dev-gutools.co.uk/document/${id}/register`, {
+const registerDocument = async (documentId: string, view: EditorView) => {
+  await fetch(`https://editorial-collaboration.local.dev-gutools.co.uk/document/${documentId}/register`, {
     method: 'POST',
     mode: 'cors',
     credentials: 'include',

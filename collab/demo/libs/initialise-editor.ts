@@ -1,0 +1,25 @@
+import { collab } from 'prosemirror-collab';
+import { schema } from 'prosemirror-schema-basic';
+import type { Transaction } from 'prosemirror-state';
+import { EditorState } from 'prosemirror-state';
+import { EditorView } from 'prosemirror-view';
+import type { DOMNode } from 'prosemirror-view/src/dom';
+import { StepSender } from "./step-sender";
+
+const initialiseEditor = (
+  place: null | DOMNode | ((editor: HTMLElement) => void) | {mount: HTMLElement},
+  attributes: Record<string, string> | ((state: EditorState) => Record<string, string>)
+) => {
+  const plugins = [collab()];
+  const state = EditorState.create({ schema, plugins });
+  const stepSender = new StepSender();
+  const view = new EditorView(place, { attributes, state, dispatchTransaction: (transaction: Transaction) => {
+      const newState = view.state.apply(transaction);
+      stepSender.sendSteps(newState);
+      view.updateState(newState);
+    }});
+  stepSender.setView(view);
+  return view;
+};
+
+export { initialiseEditor };
