@@ -5,6 +5,8 @@ import { initialiseEditor } from '../libs/initialise-editor';
 const EDITOR_CLASS = 'rich-text-editor';
 
 const style = css({
+  gridColumn: 'content-start / content-end',
+  width: 'stretch',
   border: 'solid 1px black',
   [`.${EDITOR_CLASS}`]: {
     whiteSpace: 'pre-wrap',
