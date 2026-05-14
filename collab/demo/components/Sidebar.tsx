@@ -1,6 +1,6 @@
 const Sidebar = () => {
   return (
-    <div>Placeholder</div>
+    <div>Sidebar Placeholder</div>
   );
 };
 

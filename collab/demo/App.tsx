@@ -15,6 +15,7 @@ const style = css({
 const App = () => {
   return (
     <div css={style}>
+
       <Sidebar />
       <Editor />
     </div>

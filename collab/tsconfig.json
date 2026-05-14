@@ -20,5 +20,10 @@
     "types": ["node", "jest"],
     "jsx": "react-jsx",
     "jsxImportSource": "@emotion/react"
-  }
+  },
+  "exclude": [
+    "dist",
+    "node_modules",
+    "playwright.config.ts"
+  ]
 }
