@@ -1,24 +1,24 @@
-import { css } from '@emotion/react';
+import { Grid, Item } from '@guardian/stand/grid';
+import { Layout, Sidebar } from '@guardian/stand/layout';
+import { TopBar, TopBarToolName } from '@guardian/stand/TopBar';
+import { DocumentSearch } from './components/DocumentSearch';
 import { Editor } from './components/Editor';
-import {Sidebar} from "./components/Sidebar";
-
-const style = css({
-  display: 'grid',
-  gridTemplateColumns: 'minmax(0, 1fr) [decoration-start title-start] repeat(3, 60px) [title-end content-start] repeat(12, 60px) [content-end hide-start] 60px [decoration-end hide-end] minmax(0, 1fr)',
-  gridAutoColumns: '60px',
-  gridTemplateRows: '[headline-start content-start content-toggleable-start controls-start] auto [controls-end] auto [headline-end treats-start] auto [content-end content-toggleable-end treats-end bottom-content-start] auto [bottom-content-end]',
-  columnGap: '20px',
-  placeItems: 'center',
-  placeContent: 'center',
-});
+import { EditHistory } from "./components/EditHistory";
 
 const App = () => {
   return (
-    <div css={style}>
-
-      <Sidebar />
-      <Editor />
-    </div>
+    <Layout>
+      <TopBar>
+        <TopBarToolName name='Edit History Demo' favicon={{ letter: 'C' }} />
+      </TopBar>
+      <Sidebar layoutSmBreakpoint='above-grid'>
+        <DocumentSearch />
+      </Sidebar>
+      <Grid>
+        <Item size={{sm: 12, md: 8}}><Editor /></Item>
+        <Item size={{ sm: 12, md: 4 }}><EditHistory /></Item>
+      </Grid>
+    </Layout>
   );
 }
 
