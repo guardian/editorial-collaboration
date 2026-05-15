@@ -73,8 +73,11 @@ export default defineConfig({
   /* Run your local dev server before starting the tests */
   webServer: {
     command: 'npm run demo',
-    url: 'http://localhost:3001', // replace with your webpack devServer port from demo.config.js
-    reuseExistingServer: !process.env.CI,
+    url: 'http://localhost:3001',
     timeout: 120 * 1000,
   },
+
+  globalSetup: './tests/global-setup.ts',
+
+  globalTeardown: './tests/global-teardown.ts',
 });
