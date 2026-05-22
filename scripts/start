@@ -15,7 +15,7 @@ run_nginx() {
 
 run_collab() {
   cd "${ROOT_DIR}/collab"
-  echo "🌟 Collab service should be available at https://editorial-collaboration.local.dev-gutools.co.uk!"
+  echo "🌟 Collab service should be available at https://editorial-collaboration.local.dev-gutools.co.uk !"
   npm run --silent start
 }
 
