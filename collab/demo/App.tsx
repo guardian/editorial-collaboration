@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { Documents } from './components/Documents';
 import { EditHistory } from './components/EditHistory';
 import { Editor } from './components/Editor';
+import { Document } from './model/document';
 
 // required for panel scrolling to work correctly.
 const heightInherit = {
@@ -24,7 +25,7 @@ const globalStyles = css({
 });
 
 const App = () => {
-  const [currentDocumentId, setCurrentDocumentId] = useState<string | undefined>();
+  const [currentDocument, setCurrentDocument] = useState<Document | undefined>();
   return (
     <>
       <Global styles={globalStyles} />
@@ -33,10 +34,10 @@ const App = () => {
           <TopBarToolName name='Edit History' favicon={{ icon: 'history' }} />
         </TopBar>
         <Sidebar layoutSmBreakpoint='above-grid' cssOverrides={css(heightInherit)}>
-          <Documents setDocumentId={setCurrentDocumentId} currentDocumentId={currentDocumentId} />
+          <Documents currentDocument={currentDocument} setCurrentDocument={setCurrentDocument} />
         </Sidebar>
         <Grid>
-          <Item size={{sm: 12, md: 8}}><Editor documentId={currentDocumentId} /></Item>
+          <Item size={{sm: 12, md: 8}}><Editor document={currentDocument} /></Item>
           <Item size={{ sm: 12, md: 4 }}><EditHistory /></Item>
         </Grid>
       </Layout>

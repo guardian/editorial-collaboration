@@ -3,14 +3,17 @@ import { baseColors, baseTypography } from '@guardian/stand';
 import { Button } from '@guardian/stand/button';
 import type { FunctionComponent } from 'react';
 import { useCallback, useEffect , useState } from 'react';
-import { v4 } from 'uuid';
 import { z } from 'zod';
 import { getMonthName } from '../libs/constants';
-import { getDocuments } from '../libs/register-document';
+import { fetchDocuments, registerDocument } from '../libs/documents';
+import { document } from '../model/document';
+import type { Document } from '../model/document';
+import { v4 } from 'uuid';
+import { createNewEditorState } from '../libs/prosemirror-config';
 
 type DocumentSearchProps = {
-  setDocumentId: (id: string) => void;
-  currentDocumentId: string | undefined;
+  currentDocument: Document | undefined;
+  setCurrentDocument: (document: Document | undefined) => void;
 };
 
 const style = {
@@ -52,20 +55,6 @@ const style = {
   }),
 };
 
-const document = z.object({
-  id: z.string(),
-  timestamp: z.string(),
-});
-type Document = z.infer<typeof document>;
-
-const parseDocuments = (response: unknown): Document[] => {
-  const documents = z.array(document).safeParse(response);
-  if (documents.success) {
-    return documents.data;
-  }
-  return [];
-}
-
 const getDate = (timestamp: string) => {
   const date = new Date(timestamp);
   if (date.toString() === 'Invalid Date') {
@@ -75,24 +64,48 @@ const getDate = (timestamp: string) => {
 }
 
 const Documents: FunctionComponent<DocumentSearchProps> = ({
-  setDocumentId,
-  currentDocumentId,
+  currentDocument,
+  setCurrentDocument,
 }) => {
   const [documents, setDocuments] = useState<Document[]>([]);
+  const [pending, setPending] = useState(false);
 
   useEffect(() => {
-    getDocuments()
+    setPending(true);
+    fetchDocuments()
       .then(response => response.json())
-      .then(json => setDocuments(parseDocuments(json)))
-      .catch(err => console.error(err));
+      .then(json => {
+        const documents = z.array(document).parse(json);
+        setDocuments(documents);
+      })
+      .catch(err => console.error(err))
+      .finally(() => setPending(false));
   }, []);
 
-  const onClick = useCallback((id?: string) => setDocumentId(id ?? v4()), [setDocumentId]);
+  const onClick = useCallback(async (id?: string) => {
+    const maybeDocument = documents.find(document => document.id === id);
+    if (maybeDocument) {
+      setCurrentDocument(maybeDocument);
+    } else {
+      setPending(true);
+      const id = v4();
+      const state = createNewEditorState();
+      await registerDocument(id, state)
+        .then(response => response.json())
+        .then(json => {
+          const newDocument = document.parse(json);
+          setCurrentDocument(newDocument);
+          setDocuments([...documents, newDocument]);
+        })
+        .catch(err => console.error(err))
+        .finally(() => setPending(false));
+    }
+  }, [documents, setCurrentDocument]);
 
   const DocumentEntry = (document: Document) => {
     return (
       <button
-        css={style.documentEntry(currentDocumentId === document.id)}
+        css={style.documentEntry(currentDocument?.id === document.id)}
         onClick={() => onClick(document.id)}
       >
         <div>{document.id}</div>
@@ -111,7 +124,7 @@ const Documents: FunctionComponent<DocumentSearchProps> = ({
           )) :
           (<div>No documents found</div>)
         }
-        <Button cssOverrides={style.button} onClick={() => onClick()}>Create New Document</Button>
+        <Button isDisabled={pending} cssOverrides={style.button} onClick={() => onClick()}>Create New Document</Button>
       </div>
     </div>
   );

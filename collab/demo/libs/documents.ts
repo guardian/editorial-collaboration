@@ -1,23 +1,22 @@
-import type { EditorView } from 'prosemirror-view';
 import { SERVER } from './constants';
+import { EditorState } from 'prosemirror-state';
 
-const registerDocument = async (documentId: string, view: EditorView) => {
+const registerDocument = async (documentId: string, state: EditorState) =>
   await fetch(`${SERVER}/document/${documentId}/register`, {
     method: 'POST',
     mode: 'cors',
     credentials: 'include',
-    body: JSON.stringify(view.state.doc.toJSON()),
+    body: JSON.stringify(state.doc.toJSON()),
     headers: {
       'Content-Type': 'application/json',
     }
   });
-};
 
-const getDocuments = async () =>
+const fetchDocuments = async () =>
   await fetch(`${SERVER}/documents`, {
     method: 'GET',
     mode: 'cors',
     credentials: 'include',
   });
 
-export { getDocuments, registerDocument };
+export { fetchDocuments, registerDocument };

@@ -3,7 +3,6 @@ import type { EditorState } from 'prosemirror-state';
 import type { Step } from 'prosemirror-transform';
 import type { EditorView } from 'prosemirror-view';
 import { SERVER } from './constants';
-import { registerDocument } from './register-document';
 
 class StepSender {
   private MAX_STEPS_PER_REQUEST = 500;
@@ -31,7 +30,6 @@ class StepSender {
       const transaction = receiveTransaction(state, steps.steps, steps.steps.map(() => steps.clientID));
       this.view.dispatch(transaction);
       this.buffer.push(...steps.steps);
-      await registerDocument(this.documentId, this.view);
       this.sendStepsToServer();
     }
   };

@@ -65,9 +65,9 @@ app.post('/document/:id/register', authMiddleware, async (req: Request, res: Res
     return;
   }
 
-  await database.saveDocument(id, requestBody).then(() => {
+  await database.saveDocument(id, requestBody).then((document) => {
     res.status(202);
-    res.send('Received');
+    res.send(document);
   }).catch(() => {
     res.status(500);
     res.send('Error saving document to database');
