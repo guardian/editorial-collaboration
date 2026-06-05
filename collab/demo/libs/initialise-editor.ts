@@ -7,12 +7,13 @@ import type { DOMNode } from 'prosemirror-view/src/dom';
 import { StepSender } from './step-sender';
 
 const initialiseEditor = (
+  documentId: string,
   place: null | DOMNode | ((editor: HTMLElement) => void) | {mount: HTMLElement},
   attributes: Record<string, string> | ((state: EditorState) => Record<string, string>),
 ) => {
   const plugins = [collab()];
   const state = EditorState.create({ schema, plugins });
-  const stepSender = new StepSender();
+  const stepSender = new StepSender(documentId);
   const view = new EditorView(place, { attributes, state, dispatchTransaction: (transaction: Transaction) => {
       const newState = view.state.apply(transaction);
       view.updateState(newState);

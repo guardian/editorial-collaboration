@@ -1,38 +1,52 @@
 import { css } from '@emotion/react';
+import { baseColors } from '@guardian/stand';
+import type { FunctionComponent } from 'react';
 import { useEffect, useRef } from 'react';
 import { initialiseEditor } from '../libs/initialise-editor';
 
-const EDITOR_CLASS = 'rich-text-editor';
-
-const style = css({
-  gridColumn: 'content-start / content-end',
-  width: 'stretch',
-  border: 'solid 1px black',
-  [`.${EDITOR_CLASS}`]: {
-    whiteSpace: 'pre-wrap',
-    padding: '10px',
-    ':focus-visible': {
-      outline: 'none',
-    },
-  }
-});
-
-const Editor = () => {
-  const editorRef = useRef(null);
-  const initialised = useRef(false);
-  const attributes = { class: EDITOR_CLASS };
-
-  useEffect(() => {
-    if (!initialised.current) {
-      initialised.current = true;
-      const editor = initialiseEditor(editorRef.current, attributes);
-      editor.focus();
-    }
-  }, []);
-
-  return (
-    <div css={style} ref={editorRef} />
-  );
+type EditorProps = {
+  documentId: string | undefined;
 };
 
-export { Editor }
+const EDITOR_CLASS = 'rich-text-editor';
+
+const style = {
+  placeholder: css({
+    padding: '15px 10px',
+    fontStyle: 'italic',
+    fontSize: '1.1rem',
+    color: `${baseColors.neutral['400']}`,
+  }),
+  editor: css({
+    gridColumn: 'content-start / content-end',
+    width: 'stretch',
+    border: 'solid 1px black',
+    [`.${EDITOR_CLASS}`]: {
+      whiteSpace: 'pre-wrap',
+      padding: '10px',
+      ':focus-visible': {
+        outline: 'none',
+      },
+    }
+  })
+}
+
+const Editor: FunctionComponent<EditorProps> = ({
+  documentId
+}) => {
+  const editorRef = useRef(null);
+  const initialised = useRef(false);
+  const attributes = {class: EDITOR_CLASS};
+
+  useEffect(() => {
+    if (!initialised.current && (documentId != null)) {
+      initialised.current = true;
+      const editor = initialiseEditor(documentId, editorRef.current, attributes);
+      editor.focus();
+    }
+  }, [documentId, editorRef]);
+
+  return (<>{(documentId == null) ? (<div css={style.placeholder}>Select or create a document to start editing...</div>) : <div css={style.editor} ref={editorRef}/>}</>);
+};
+
+export { Editor };

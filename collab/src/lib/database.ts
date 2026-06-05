@@ -94,7 +94,7 @@ class Database {
 
   public readDocuments = async () => {
     return await this.connect()
-      .then((sql: Sql) => sql`SELECT * FROM document LIMIT 1000`)
+      .then((sql: Sql) => sql`SELECT * FROM document LIMIT 100`)
       .catch(err => console.error(err));
   }
 }
