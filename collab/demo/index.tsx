@@ -3,7 +3,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router';
 import { App } from './App';
-import { globalStyles } from './global-styles';
+import { global } from './styles';
 
 const rootNode = document.getElementById('root');
 
@@ -18,7 +18,7 @@ const router = createBrowserRouter([{
 const root = createRoot(rootNode);
 root.render(
   <StrictMode>
-    <Global styles={globalStyles}></Global>
+    <Global styles={global}></Global>
     <RouterProvider router={router} />
   </StrictMode>,
 );

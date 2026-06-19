@@ -22,7 +22,6 @@ const style = {
   editor: css({
     gridColumn: 'content-start / content-end',
     width: 'stretch',
-    border: 'solid 1px black',
     [`.${EDITOR_CLASS}`]: {
       whiteSpace: 'pre-wrap',
       padding: '10px',

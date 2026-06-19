@@ -10,6 +10,7 @@ import { getMonthName } from '../libs/constants';
 import { createNewEditorState } from '../libs/prosemirror-config';
 import { document } from '../model/document';
 import type { Document } from '../model/document';
+import { panel } from '../styles';
 
 type DocumentSearchProps = {
   currentDocument: Document | undefined;
@@ -17,29 +18,6 @@ type DocumentSearchProps = {
 };
 
 const style = {
-  panel: css({
-    backgroundColor: baseColors.neutral[800],
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    height: 'inherit',
-  }),
-  header: css({
-    width: 'stretch',
-    backgroundColor: baseColors.neutral[700],
-    padding: 10,
-    fontSize: baseTypography.size['16-rem'],
-    fontWeight: baseTypography.weight['Guardian Text Egyptian'].bold,
-  }),
-  contents: css({
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 10,
-    width: 'stretch',
-    padding: '10px',
-    overflowX: 'hidden',
-    overflowY: 'auto',
-  }),
   documentEntry: (isCurrentDocument: boolean) => css({
     backgroundColor: baseColors.neutral[900],
     border: isCurrentDocument ?
@@ -67,6 +45,7 @@ const Documents: FunctionComponent<DocumentSearchProps> = ({
   currentDocument,
   setCurrentDocument,
 }) => {
+  const { container, header, contents } = panel;
   const [documents, setDocuments] = useState<Document[]>([]);
   const [pending, setPending] = useState(false);
 
@@ -115,9 +94,9 @@ const Documents: FunctionComponent<DocumentSearchProps> = ({
   }
 
   return (
-    <div css={style.panel}>
-      <div css={style.header}>Documents</div>
-      <div css={style.contents}>
+    <div css={container}>
+      <div css={header}>Document Search</div>
+      <div css={contents}>
         {documents.length > 0 ?
           (documents.map(document =>
             <DocumentEntry key={document.id} {...document} />
