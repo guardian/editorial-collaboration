@@ -1,10 +1,10 @@
 import { css } from '@emotion/react';
 import { baseColors } from '@guardian/stand';
+import type { EditorView } from 'prosemirror-view';
 import type { FunctionComponent } from 'react';
 import { useEffect, useRef } from 'react';
 import { initialiseEditor } from '../libs/initialise-editor';
 import type { Document } from '../model/document';
-import { EditorView } from 'prosemirror-view';
 
 type EditorProps = {
   document: Document | undefined;
@@ -46,9 +46,11 @@ const Editor: FunctionComponent<EditorProps> = ({
     if ((document != null) && initialised.current !== document.id) {
       editor.current?.destroy();
       initialised.current = document.id;
-      const newEditor = initialiseEditor(document, editorRef.current, attributes);
-      editor.current = newEditor;
-      newEditor?.focus();
+      void initialiseEditor(document, editorRef.current, attributes)
+        .then(newEditor => {
+          editor.current = newEditor;
+          newEditor?.focus();
+        });
     }
   }, [document, editor, editorRef]);
 

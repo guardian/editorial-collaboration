@@ -1,8 +1,8 @@
 import type { Sql } from 'postgres';
 import postgres from 'postgres';
 import { STAGE } from '../constants';
-import type { Json } from '../types/json';
-import type { StepModel } from '../types/step';
+import type { Json } from '../model/json';
+import type { SendableSteps } from '../model/step';
 import { SecretsManager } from './aws';
 
 type DatabaseConfig = {
@@ -70,12 +70,19 @@ class Database {
     }
   };
 
-  public saveSteps = async (id: string, steps: StepModel[]) => {
+  public saveSteps = async (id: string, sendableSteps: SendableSteps[]) => {
     const timestamp: number = Date.now();
-    const values = steps.map(step => { return { id, timestamp, content: step }})
+    const values = sendableSteps.map(step => { return { id, timestamp, content: step }})
     await this.connect()
       .then((sql: Sql) => sql`INSERT INTO step ${ sql(values) }`)
       .catch(err => console.error(err)) // TODO: logging/alerting
+  };
+
+  // TODO: implement pagination
+  public readSteps = async (id: string) => {
+    return await this.connect()
+      .then((sql: Sql) => sql`SELECT timestamp, content FROM step WHERE id=${id}`)
+      .catch(err => console.error(err)); // TODO: logging/alerting
   };
 
   public saveDocument = async (id: string, document: Json) => {

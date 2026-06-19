@@ -1,4 +1,4 @@
-import type { Stage } from "./types/stage";
+import type { Stage } from "./model/stage";
 
 export const AWS_REGION = 'eu-west-1';
 

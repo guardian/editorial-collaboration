@@ -3,13 +3,13 @@ import { baseColors, baseTypography } from '@guardian/stand';
 import { Button } from '@guardian/stand/button';
 import type { FunctionComponent } from 'react';
 import { useCallback, useEffect , useState } from 'react';
+import { v4 } from 'uuid';
 import { z } from 'zod';
 import { getMonthName } from '../libs/constants';
 import { fetchDocuments, registerDocument } from '../libs/documents';
+import { createNewEditorState } from '../libs/prosemirror-config';
 import { document } from '../model/document';
 import type { Document } from '../model/document';
-import { v4 } from 'uuid';
-import { createNewEditorState } from '../libs/prosemirror-config';
 
 type DocumentSearchProps = {
   currentDocument: Document | undefined;
@@ -82,15 +82,15 @@ const Documents: FunctionComponent<DocumentSearchProps> = ({
       .finally(() => setPending(false));
   }, []);
 
-  const onClick = useCallback(async (id?: string) => {
+  const onClick = useCallback((id?: string) => {
     const maybeDocument = documents.find(document => document.id === id);
-    if (maybeDocument) {
+    if (maybeDocument != undefined) {
       setCurrentDocument(maybeDocument);
     } else {
       setPending(true);
       const id = v4();
       const state = createNewEditorState();
-      await registerDocument(id, state)
+      void registerDocument(id, state)
         .then(response => response.json())
         .then(json => {
           const newDocument = document.parse(json);

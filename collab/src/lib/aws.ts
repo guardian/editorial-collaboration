@@ -2,7 +2,7 @@ import type { GetSecretValueCommandOutput } from '@aws-sdk/client-secrets-manage
 import { GetSecretValueCommand, SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
 import { fromNodeProviderChain } from '@aws-sdk/credential-providers';
 import { AWS_REGION, LOCAL_PROFILE } from '../constants';
-import type { Json } from '../types/json';
+import type { Json } from '../model/json';
 
 class SecretsManager {
   private static instance: SecretsManager | undefined;

@@ -1,5 +1,5 @@
+import type { EditorState } from 'prosemirror-state';
 import { SERVER } from './constants';
-import { EditorState } from 'prosemirror-state';
 
 const registerDocument = async (documentId: string, state: EditorState) =>
   await fetch(`${SERVER}/document/${documentId}/register`, {

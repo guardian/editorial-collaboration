@@ -4,12 +4,18 @@ import type { Step } from 'prosemirror-transform';
 import type { EditorView } from 'prosemirror-view';
 import { SERVER } from './constants';
 
+type SendableStep = {
+  version: number;
+  steps: readonly Step[];
+  clientID: number | string;
+}
+
 class StepSender {
   private MAX_STEPS_PER_REQUEST = 500;
   private requestInFlight = false;
   private readonly documentId: string;
   private view?: EditorView;
-  private buffer: Step[] = [];
+  private buffer: SendableStep[] = [];
 
   constructor(documentId: string) {
     this.documentId = documentId;
@@ -24,12 +30,12 @@ class StepSender {
    * and adds them to the buffer.
    * @param state The current editor state.
    */
-  public sendSteps = async (state: EditorState) => {
+  public sendSteps = (state: EditorState) => {
     const steps = sendableSteps(state);
     if ((this.view != null) && (steps != null) && steps.steps.length > 0) {
       const transaction = receiveTransaction(state, steps.steps, steps.steps.map(() => steps.clientID));
       this.view.dispatch(transaction);
-      this.buffer.push(...steps.steps);
+      this.buffer.push({ version: steps.version, steps: steps.steps, clientID: steps.clientID });
       this.sendStepsToServer();
     }
   };
