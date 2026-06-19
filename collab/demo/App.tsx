@@ -3,26 +3,25 @@ import { Grid, Item } from '@guardian/stand/grid';
 import { Layout, Sidebar } from '@guardian/stand/layout';
 import { TopBar, TopBarToolName } from '@guardian/stand/TopBar';
 import { useCallback, useState } from 'react';
-import z from 'zod'
 import { DocumentSearch } from './components/DocumentSearch';
 import { Editor } from './components/Editor';
 import { VersionHistory } from './components/VersionHistory';
 import { fetchSteps } from './libs/api';
 import type { Document } from './model/document';
-import type { SendableStepsFromServer } from './model/steps';
-import { sendableStepsFromServer } from './model/steps';
+import type { SendableSteps} from './model/steps';
+import { stepServerReponse } from './model/steps';
 import { heightInherit } from './styles';
 
 const App = () => {
   const [currentDocument, setCurrentDocument] = useState<Document | undefined>();
-  const [currentSteps, setCurrentSteps] = useState<SendableStepsFromServer[]>([]);
+  const [currentSteps, setCurrentSteps] = useState<SendableSteps[]>([]);
 
   const fetchStepsAndSetCurrentDocument = useCallback((document: Document) => {
     void fetchSteps(document.id)
       .then(response => response.json()
-      ).then(json => z.array(sendableStepsFromServer).parse(json)
+      ).then(json => stepServerReponse.parse(json)
       ).then(steps => {
-        setCurrentSteps(steps);
+        setCurrentSteps(steps.map(step => step.content));
         setCurrentDocument(document);
       });
   }, []);
@@ -42,7 +41,7 @@ const App = () => {
         <Item size={{sm: 12, md: 8}}>
           <Editor
             document={currentDocument}
-            steps={currentSteps.map(steps => steps.content)}
+            steps={currentSteps}
           />
         </Item>
         <Item size={{ sm: 12, md: 4 }} cssOverrides={css(heightInherit)}>

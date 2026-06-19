@@ -6,19 +6,16 @@ const sendableSteps = z.object({
   clientID: z.xor([z.string(), z.number()]),
   clientTimestamp: z.number(),
   steps: z.array(z.any()), // TODO: model different types of step.
-})
-
-const sendableStepsFromServer = z.object({
-  timestamp: z.string(),
-  content: sendableSteps,
 });
 
+const stepServerReponse = z.array(z.object({
+  content: sendableSteps
+}))
+
 type SendableSteps = z.infer<typeof sendableSteps>;
-type SendableStepsFromServer = z.infer<typeof sendableStepsFromServer>;
 
 export {
   sendableSteps,
-  sendableStepsFromServer,
+  stepServerReponse,
   type SendableSteps,
-  type SendableStepsFromServer,
 };
