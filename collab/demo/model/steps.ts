@@ -4,6 +4,7 @@ import { z } from 'zod';
 const sendableSteps = z.object({
   version: z.number(),
   clientID: z.xor([z.string(), z.number()]),
+  clientTimestamp: z.number(),
   steps: z.array(z.any()), // TODO: model different types of step.
 })
 

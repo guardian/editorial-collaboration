@@ -32,7 +32,8 @@ class StepSender {
       this.buffer.push({
         version: steps.version,
         steps: steps.steps.map(step => step.toJSON() as unknown),
-        clientID: steps.clientID
+        clientID: steps.clientID,
+        clientTimestamp: Date.now(),
       });
       this.sendStepsToServer();
     }

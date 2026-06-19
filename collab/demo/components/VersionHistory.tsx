@@ -3,7 +3,7 @@ import type { SendableStepsFromServer } from '../model/steps';
 import { panel } from '../styles';
 
 type VersionHistoryProps = {
-  steps?: SendableStepsFromServer[];
+  steps: SendableStepsFromServer[];
 }
 
 const VersionHistory: FunctionComponent<VersionHistoryProps> = ({
@@ -14,7 +14,12 @@ const VersionHistory: FunctionComponent<VersionHistoryProps> = ({
     <div css={container}>
       <div css={header}>Version History</div>
       <div css={contents}>
-        <p>{JSON.stringify(steps)}</p>
+        <p>{steps.map(step =>
+          <>
+            <h3>{step.timestamp}</h3>
+            <p>{JSON.stringify(step.content)}</p>
+          </>
+        )}</p>
       </div>
     </div>
   );
