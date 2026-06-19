@@ -4,14 +4,13 @@ import type { Transaction } from 'prosemirror-state';
 import { EditorState } from 'prosemirror-state';
 import { Step } from 'prosemirror-transform';
 import { EditorView } from 'prosemirror-view';
-import { z } from 'zod';
 import type { Document } from '../model/document';
-import { sendableStepsFromServer } from '../model/sendable-steps';
-import { fetchSteps } from './api';
+import type { SendableSteps } from '../model/steps';
 import { StepSender } from './step-sender';
 
-const initialiseEditor = async (
+const initialiseEditor = (
   document: Document,
+  steps: SendableSteps[],
   place: null | ((editor: HTMLElement) => void) | {mount: HTMLElement},
   attributes: Record<string, string> | ((state: EditorState) => Record<string, string>),
 ) => {
@@ -28,16 +27,11 @@ const initialiseEditor = async (
         stepSender.sendSteps(newState);
       }});
     stepSender.setView(view);
-    await fetchSteps(document.id)
-      .then(response => response.json())
-      .then(json => z.array(sendableStepsFromServer).parse(json)
-        .map(sendableSteps => sendableSteps.content)
-        .sort((a, b) => a.version - b.version))
-      .then(content => content.flatMap(content => content.steps as unknown))
-      .then(steps => {
-        const transaction = receiveTransaction(view.state, steps.map(step => Step.fromJSON(schema, step)), []);
-        view.dispatch(transaction);
-      }).catch(err => console.error(err));
+    const stepsToApply = steps
+      .sort((a, b) => a.version - b.version)
+      .flatMap(content => content.steps.map(step => Step.fromJSON(schema, step)));
+    const transaction = receiveTransaction(view.state, stepsToApply, []);
+    view.dispatch(transaction);
     // TODO if there are steps and we fail to apply them, we should prevent the editor from being initialised and show
     //  an error message to the user. This prevents steps from being lost and the document from being corrupted.
     return view;

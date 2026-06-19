@@ -6,23 +6,21 @@ import { useCallback, useEffect , useState } from 'react';
 import { v4 } from 'uuid';
 import { z } from 'zod';
 import { fetchDocuments, registerDocument } from '../libs/api';
-import { getMonthName } from '../libs/constants';
 import { createNewEditorState } from '../libs/prosemirror-config';
+import { getMonthName } from '../model/constants';
 import { document } from '../model/document';
 import type { Document } from '../model/document';
 import { panel } from '../styles';
 
 type DocumentSearchProps = {
   currentDocument: Document | undefined;
-  setCurrentDocument: (document: Document | undefined) => void;
+  setCurrentDocument: (document: Document) => void;
 };
 
 const style = {
-  documentEntry: (isCurrentDocument: boolean) => css({
+  item: css({
     backgroundColor: baseColors.neutral[900],
-    border: isCurrentDocument ?
-      `3px solid ${baseColors.orange[400]}` :
-      `1px solid ${baseColors.neutral[700]}`,
+    border: `1px solid ${baseColors.neutral[700]}`,
     padding: 10,
     textAlign: 'left',
   }),
@@ -38,14 +36,14 @@ const getDate = (timestamp: string) => {
   if (date.toString() === 'Invalid Date') {
     return;
   }
-  return `${date.getDate()} ${getMonthName(date.getMonth())}, ${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}`;
+  return `${date.getDate()} ${getMonthName(date.getMonth())} ${date.getFullYear()}, ${date.getHours()}:${date.getMinutes()}`;
 }
 
-const Documents: FunctionComponent<DocumentSearchProps> = ({
+const DocumentSearch: FunctionComponent<DocumentSearchProps> = ({
   currentDocument,
   setCurrentDocument,
 }) => {
-  const { container, header, contents } = panel;
+  const { container, header, contents, selected } = panel;
   const [documents, setDocuments] = useState<Document[]>([]);
   const [pending, setPending] = useState(false);
 
@@ -84,7 +82,7 @@ const Documents: FunctionComponent<DocumentSearchProps> = ({
   const DocumentEntry = (document: Document) => {
     return (
       <button
-        css={style.documentEntry(currentDocument?.id === document.id)}
+        css={[style.item, currentDocument?.id === document.id && selected]}
         onClick={() => onClick(document.id)}
       >
         <div>{document.id}</div>
@@ -109,4 +107,4 @@ const Documents: FunctionComponent<DocumentSearchProps> = ({
   );
 };
 
-export { Documents };
+export { DocumentSearch };

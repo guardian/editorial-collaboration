@@ -1,6 +1,6 @@
 import type { EditorState } from 'prosemirror-state';
-import type { SendableSteps } from '../model/sendable-steps';
-import { SERVER } from './constants';
+import { SERVER } from '../model/constants';
+import type { SendableSteps } from '../model/steps';
 
 const registerDocument = async (documentId: string, state: EditorState) =>
   await fetch(`${SERVER}/document/${documentId}/register`, {

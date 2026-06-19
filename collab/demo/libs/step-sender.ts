@@ -1,7 +1,7 @@
 import { receiveTransaction, sendableSteps } from 'prosemirror-collab';
 import type { EditorState } from 'prosemirror-state';
 import type { EditorView } from 'prosemirror-view';
-import type { SendableSteps } from '../model/sendable-steps';
+import type { SendableSteps } from '../model/steps';
 import { sendStepsToServer } from './api';
 
 class StepSender {

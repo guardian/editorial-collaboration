@@ -45,7 +45,10 @@ const panel = {
     padding: '10px',
     overflowX: 'hidden',
     overflowY: 'auto',
-  })
+  }),
+  selected: css({
+    border: `3px solid ${baseColors.orange[400]}`
+  }),
 }
 
 export { heightInherit, global, panel };

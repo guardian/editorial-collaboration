@@ -1,13 +1,15 @@
 import { css } from '@emotion/react';
 import { baseColors } from '@guardian/stand';
 import type { EditorView } from 'prosemirror-view';
-import type { FunctionComponent } from 'react';
-import { useEffect, useRef } from 'react';
+import type { FunctionComponent} from 'react';
+import { useEffect , useRef, useState } from 'react';
 import { initialiseEditor } from '../libs/initialise-editor';
 import type { Document } from '../model/document';
+import type { SendableSteps } from '../model/steps';
 
 type EditorProps = {
   document: Document | undefined;
+  steps: SendableSteps[];
 };
 
 const EDITOR_CLASS = 'rich-text-editor';
@@ -35,23 +37,24 @@ const style = {
 const attributes = { class: EDITOR_CLASS };
 
 const Editor: FunctionComponent<EditorProps> = ({
-  document
+  document,
+  steps,
 }) => {
-  const editor = useRef<EditorView>(null);
+  const [editor, setEditor] = useState<EditorView | undefined>(undefined);
   const editorRef = useRef(null);
   const initialised = useRef<string>(null);
 
   useEffect(() => {
     if ((document != null) && initialised.current !== document.id) {
-      editor.current?.destroy();
+      editor?.destroy();
       initialised.current = document.id;
-      void initialiseEditor(document, editorRef.current, attributes)
-        .then(newEditor => {
-          editor.current = newEditor;
-          newEditor?.focus();
-        });
+      const newEditor = initialiseEditor(document, steps, editorRef.current, attributes);
+      if (newEditor != null) {
+        setEditor(newEditor);
+      }
+      newEditor?.focus();
     }
-  }, [document, editor, editorRef]);
+  }, [document, editor, editorRef, steps]);
 
   return (
     <>{(document == null) ?

@@ -7,14 +7,17 @@ const sendableSteps = z.object({
   steps: z.array(z.any()), // TODO: model different types of step.
 })
 
-export const sendableStepsFromServer = z.object({
+const sendableStepsFromServer = z.object({
   timestamp: z.string(),
   content: sendableSteps,
 });
 
-export type SendableSteps = z.infer<typeof sendableSteps>;
-export type SendableStepsFromServer = z.infer<typeof sendableStepsFromServer>;
+type SendableSteps = z.infer<typeof sendableSteps>;
+type SendableStepsFromServer = z.infer<typeof sendableStepsFromServer>;
 
 export {
-  sendableSteps
-}
+  sendableSteps,
+  sendableStepsFromServer,
+  type SendableSteps,
+  type SendableStepsFromServer,
+};
