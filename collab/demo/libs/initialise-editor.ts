@@ -6,9 +6,9 @@ import { Step } from 'prosemirror-transform';
 import { EditorView } from 'prosemirror-view';
 import { z } from 'zod';
 import type { Document } from '../model/document';
-import { sendableSteps } from '../model/sendableSteps';
+import { sendableStepsFromServer } from '../model/sendable-steps';
+import { fetchSteps } from './api';
 import { StepSender } from './step-sender';
-import { fetchSteps } from './steps';
 
 const initialiseEditor = async (
   document: Document,
@@ -30,7 +30,7 @@ const initialiseEditor = async (
     stepSender.setView(view);
     await fetchSteps(document.id)
       .then(response => response.json())
-      .then(json => z.array(sendableSteps).parse(json)
+      .then(json => z.array(sendableStepsFromServer).parse(json)
         .map(sendableSteps => sendableSteps.content)
         .sort((a, b) => a.version - b.version))
       .then(content => content.flatMap(content => content.steps as unknown))

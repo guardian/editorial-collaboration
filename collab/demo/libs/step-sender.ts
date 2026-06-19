@@ -1,21 +1,15 @@
 import { receiveTransaction, sendableSteps } from 'prosemirror-collab';
 import type { EditorState } from 'prosemirror-state';
-import type { Step } from 'prosemirror-transform';
 import type { EditorView } from 'prosemirror-view';
-import { SERVER } from './constants';
-
-type SendableStep = {
-  version: number;
-  steps: readonly Step[];
-  clientID: number | string;
-}
+import type { SendableSteps } from '../model/sendable-steps';
+import { sendStepsToServer } from './api';
 
 class StepSender {
   private MAX_STEPS_PER_REQUEST = 500;
   private requestInFlight = false;
   private readonly documentId: string;
   private view?: EditorView;
-  private buffer: SendableStep[] = [];
+  private buffer: SendableSteps[] = [];
 
   constructor(documentId: string) {
     this.documentId = documentId;
@@ -35,7 +29,11 @@ class StepSender {
     if ((this.view != null) && (steps != null) && steps.steps.length > 0) {
       const transaction = receiveTransaction(state, steps.steps, steps.steps.map(() => steps.clientID));
       this.view.dispatch(transaction);
-      this.buffer.push({ version: steps.version, steps: steps.steps, clientID: steps.clientID });
+      this.buffer.push({
+        version: steps.version,
+        steps: steps.steps.map(step => step.toJSON() as unknown),
+        clientID: steps.clientID
+      });
       this.sendStepsToServer();
     }
   };
@@ -50,18 +48,11 @@ class StepSender {
       const stepsToSend = this.chunk();
       if (stepsToSend.length > 0) {
         this.requestInFlight = true;
-        fetch(`${SERVER}/document/${this.documentId}/steps`, {
-          method: 'POST',
-          mode: 'cors',
-          credentials: 'include',
-          headers: new Headers({
-            "Content-Type": "application/json"
-          }),
-          body: JSON.stringify(stepsToSend)
-        }).catch(err => {
-          console.error(err); // TODO: logging/alerting
-          this.buffer.unshift(...stepsToSend);
-        }).finally(() =>
+        sendStepsToServer(this.documentId, stepsToSend)
+          .catch(err => {
+            console.error(err); // TODO: logging/alerting
+            this.buffer.unshift(...stepsToSend);
+          }).finally(() =>
           this.requestInFlight = false
         );
       }
