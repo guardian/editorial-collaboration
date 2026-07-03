@@ -1,11 +1,11 @@
 import { collab, receiveTransaction } from 'prosemirror-collab';
 import { schema } from 'prosemirror-schema-basic';
-import type { Transaction } from 'prosemirror-state';
-import { EditorState } from 'prosemirror-state';
+import type { EditorState, Transaction } from 'prosemirror-state';
 import { Step } from 'prosemirror-transform';
 import { EditorView } from 'prosemirror-view';
 import type { Document } from '../model/document';
 import type { SendableSteps } from '../model/steps';
+import { configureEditorState } from './configure-editor-state';
 import { StepSender } from './step-sender';
 
 const initialiseEditor = (
@@ -18,8 +18,7 @@ const initialiseEditor = (
   const version = 0;
   const plugins = [collab({ clientID, version })];
   try {
-    const doc = schema.nodeFromJSON(document.document);
-    const state = EditorState.create({ doc, schema, plugins });
+    const state = configureEditorState(plugins, document.document);
     const stepSender = new StepSender(document.id);
     const view = new EditorView(place, { attributes, state, dispatchTransaction: (transaction: Transaction) => {
         const newState = view.state.apply(transaction);

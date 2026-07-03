@@ -9,7 +9,7 @@ import { VersionHistory } from './components/VersionHistory';
 import { fetchSteps } from './libs/api';
 import type { Document } from './model/document';
 import type { SendableSteps} from './model/steps';
-import { stepServerReponse } from './model/steps';
+import { stepServerResponse } from './model/steps';
 import { heightInherit } from './styles';
 
 const App = () => {
@@ -19,7 +19,7 @@ const App = () => {
   const fetchStepsAndSetCurrentDocument = useCallback((document: Document) => {
     void fetchSteps(document.id)
       .then(response => response.json()
-      ).then(json => stepServerReponse.parse(json)
+      ).then(json => stepServerResponse.parse(json)
       ).then(steps => {
         setCurrentSteps(steps.map(step => step.content));
         setCurrentDocument(document);

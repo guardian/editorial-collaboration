@@ -6,8 +6,8 @@ import { useCallback, useEffect , useState } from 'react';
 import { v4 } from 'uuid';
 import { z } from 'zod';
 import { fetchDocuments, registerDocument } from '../libs/api';
-import { createNewEditorState } from '../libs/prosemirror-config';
-import { getMonthName } from '../model/constants';
+import { configureEditorState } from '../libs/configure-editor-state';
+import { formatDate } from '../libs/format-date';
 import { document } from '../model/document';
 import type { Document } from '../model/document';
 import { panel } from '../styles';
@@ -30,14 +30,6 @@ const style = {
     width: 'fit-content',
   }),
 };
-
-const getDate = (timestamp: string) => {
-  const date = new Date(timestamp);
-  if (date.toString() === 'Invalid Date') {
-    return;
-  }
-  return `${date.getDate()} ${getMonthName(date.getMonth())} ${date.getFullYear()}, ${date.getHours()}:${date.getMinutes()}`;
-}
 
 const DocumentSearch: FunctionComponent<DocumentSearchProps> = ({
   currentDocument,
@@ -66,7 +58,7 @@ const DocumentSearch: FunctionComponent<DocumentSearchProps> = ({
     } else {
       setPending(true);
       const id = v4();
-      const state = createNewEditorState();
+      const state = configureEditorState();
       void registerDocument(id, state)
         .then(response => response.json())
         .then(json => {
@@ -86,7 +78,7 @@ const DocumentSearch: FunctionComponent<DocumentSearchProps> = ({
         onClick={() => onClick(document.id)}
       >
         <div>{document.id}</div>
-        <div>created: {getDate(document.timestamp)}</div>
+        <div>created: {formatDate(document.timestamp)}</div>
       </button>
     );
   }

@@ -33,7 +33,7 @@ class StepSender {
         version: steps.version,
         steps: steps.steps.map(step => step.toJSON() as unknown),
         clientID: steps.clientID,
-        clientTimestamp: Date.now(),
+        clientTimestamp: new Date().toISOString(),
       });
       this.sendStepsToServer();
     }
