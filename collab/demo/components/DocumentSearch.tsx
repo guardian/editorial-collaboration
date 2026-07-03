@@ -1,5 +1,3 @@
-import { css } from '@emotion/react';
-import { baseColors, baseTypography } from '@guardian/stand';
 import { Button } from '@guardian/stand/button';
 import type { FunctionComponent } from 'react';
 import { useCallback, useEffect , useState } from 'react';
@@ -10,32 +8,17 @@ import { configureEditorState } from '../libs/configure-editor-state';
 import { formatDate } from '../libs/format-date';
 import { document } from '../model/document';
 import type { Document } from '../model/document';
-import { panel } from '../styles';
+import { panel as style } from '../styles';
 
 type DocumentSearchProps = {
   currentDocument: Document | undefined;
   setCurrentDocument: (document: Document) => void;
 };
 
-const style = {
-  item: css({
-    backgroundColor: baseColors.neutral[900],
-    border: `1px solid ${baseColors.neutral[700]}`,
-    padding: 10,
-    textAlign: 'left',
-  }),
-  button: css({
-    fontFamily: baseTypography.family['Guardian Text Egyptian'],
-    fontWeight: baseTypography.weight['Guardian Text Egyptian'].normal,
-    width: 'fit-content',
-  }),
-};
-
 const DocumentSearch: FunctionComponent<DocumentSearchProps> = ({
   currentDocument,
   setCurrentDocument,
 }) => {
-  const { container, header, contents, selected } = panel;
   const [documents, setDocuments] = useState<Document[]>([]);
   const [pending, setPending] = useState(false);
 
@@ -74,7 +57,7 @@ const DocumentSearch: FunctionComponent<DocumentSearchProps> = ({
   const DocumentEntry = (document: Document) => {
     return (
       <button
-        css={[style.item, currentDocument?.id === document.id && selected]}
+        css={[style.item, currentDocument?.id === document.id && style.selected]}
         onClick={() => onClick(document.id)}
       >
         <div>{document.id}</div>
@@ -84,9 +67,9 @@ const DocumentSearch: FunctionComponent<DocumentSearchProps> = ({
   }
 
   return (
-    <div css={container}>
-      <div css={header}>Document Search</div>
-      <div css={contents}>
+    <div css={style.container}>
+      <div css={style.header}>Document Search</div>
+      <div css={style.contents}>
         {documents.length > 0 ?
           (documents.map(document =>
             <DocumentEntry key={document.id} {...document} />

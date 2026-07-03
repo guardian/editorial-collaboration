@@ -14,15 +14,20 @@ import { heightInherit } from './styles';
 
 const App = () => {
   const [currentDocument, setCurrentDocument] = useState<Document | undefined>();
+  const [allSteps, setAllSteps] = useState<SendableSteps[]>([]);
   const [currentSteps, setCurrentSteps] = useState<SendableSteps[]>([]);
+  const [editing, setEditing] = useState<boolean>(false);
 
   const fetchStepsAndSetCurrentDocument = useCallback((document: Document) => {
     void fetchSteps(document.id)
       .then(response => response.json()
       ).then(json => stepServerResponse.parse(json)
       ).then(steps => {
-        setCurrentSteps(steps.map(step => step.content));
+        const content = steps.map(step => step.content);
+        setAllSteps(content);
+        setCurrentSteps(content);
         setCurrentDocument(document);
+        setEditing(true);
       });
   }, []);
   
@@ -42,11 +47,14 @@ const App = () => {
           <Editor
             document={currentDocument}
             steps={currentSteps}
+            editing={editing}
           />
         </Item>
         <Item size={{ sm: 12, md: 4 }} cssOverrides={css(heightInherit)}>
           <VersionHistory
-            steps={currentSteps}
+            steps={allSteps}
+            setCurrentSteps={setCurrentSteps}
+            setEditing={setEditing}
           />
         </Item>
       </Grid>

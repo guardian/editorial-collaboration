@@ -46,6 +46,17 @@ const panel = {
     overflowX: 'hidden',
     overflowY: 'auto',
   }),
+  item: css({
+    backgroundColor: baseColors.neutral[900],
+    border: `1px solid ${baseColors.neutral[700]}`,
+    padding: 10,
+    textAlign: 'left',
+  }),
+  button: css({
+    fontFamily: baseTypography.family['Guardian Text Egyptian'],
+    fontWeight: baseTypography.weight['Guardian Text Egyptian'].normal,
+    width: 'fit-content',
+  }),
   selected: css({
     border: `3px solid ${baseColors.orange[400]}`
   }),

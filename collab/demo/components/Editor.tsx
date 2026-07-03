@@ -10,6 +10,7 @@ import type { SendableSteps } from '../model/steps';
 type EditorProps = {
   document: Document | undefined;
   steps: SendableSteps[];
+  editing: boolean;
 };
 
 const EDITOR_CLASS = 'rich-text-editor';
@@ -31,35 +32,49 @@ const style = {
         outline: 'none',
       },
     }
+  }),
+  preview: css({
+    color: baseColors.neutral['200'],
   })
 }
 
-const attributes = { class: EDITOR_CLASS };
+const baselineAttributes = { class: EDITOR_CLASS };
+const readOnlyAttributes = { ...baselineAttributes, contentEditable: 'false' };
 
 const Editor: FunctionComponent<EditorProps> = ({
   document,
   steps,
+  editing,
 }) => {
   const [editor, setEditor] = useState<EditorView | undefined>(undefined);
   const editorRef = useRef(null);
-  const initialised = useRef<string>(null);
+  const idRef = useRef<string>();
+  const stepsRef = useRef<number>();
+  const editingRef = useRef<boolean>();
 
   useEffect(() => {
-    if ((document != null) && initialised.current !== document.id) {
+    if ((document != null) && (
+      idRef.current !== document.id ||
+      stepsRef.current !== steps.length ||
+      editingRef.current !== editing
+    )) {
       editor?.destroy();
-      initialised.current = document.id;
+      idRef.current = document.id;
+      stepsRef.current = steps.length;
+      editingRef.current = editing;
+      const attributes = editing ? baselineAttributes : readOnlyAttributes;
       const newEditor = initialiseEditor(document, steps, editorRef.current, attributes);
       if (newEditor != null) {
         setEditor(newEditor);
       }
       newEditor?.focus();
     }
-  }, [document, editor, editorRef, steps]);
+  }, [document, editor, editing, steps]);
 
   return (
     <>{(document == null) ?
       <div css={style.placeholder}>Select or create a document to start editing...</div> :
-      <div css={style.editor} ref={editorRef}/>}
+      <div css={[style.editor, !editing && style.preview]} ref={editorRef}/>}
     </>
   );
 };

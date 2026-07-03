@@ -13,19 +13,17 @@ const defaultConfig = {
 };
 
 /**
- * Takes an array of steps and groups them together, returning an array of selections that represent the 'from' index and
- * the 'to' index of each group within the provided step array. The grouping is defined by the config object.
+ * Takes an array of steps and groups them together, returning an array of selections that provide the 'from' index and
+ * the 'to' index of each group within the step array. The grouping is defined by the config object.
  * @param steps - the document steps, representing a series of chronological (step) changes in the document.
- * @param config - {
- *    minTimeStep: the minimum time granularity (in minutes) to consider when grouping steps together by client timestamp.
- *                 Steps that are closer together than this threshold will be grouped together.
- *    maxTimeStep: the maximum time granularity (in minutes) to consider when grouping steps together by client timestamp.
+ * @param config - the configuration object that defines how to group steps together. It has the following properties:
+ *    - minTimeStep: the minimum time granularity (in minutes) to consider when grouping steps together by client timestamp.
+ *    - maxTimeStep: the maximum time granularity (in minutes) to consider when grouping steps together by client timestamp.
  *                If the grouping provided by the minTimeStep does not reach the meaningfulChangeThreshold it will group
  *                steps in larger time windows until either the meaningfulChangeThreshold or the maxTimeStep is met.
- *    meaningfulChangeThreshold: the number of steps we consider to be a meaningful change in the document. If the number
+ *    - meaningfulChangeThreshold: the number of steps we consider to be a meaningful change in the document. If the number
  *                of steps in a group is less than this threshold, we will attempt to group them with other steps until
  *                we reach this threshold or the maxTimeStep is met.
- * }
  */
 const getVersionHistorySelections = (steps: SendableSteps[], config: Config = defaultConfig): StepSelection[] => {
   if (steps.length === 0) {

@@ -1,6 +1,6 @@
 import { getMonthName } from '../model/constants';
 
-const formatDate = (timestamp: string) => {
+const formatDate = (timestamp?: string) => {
   const date = new Date(timestamp);
   if (date.toString() === 'Invalid Date') {
     return;
