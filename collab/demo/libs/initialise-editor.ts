@@ -8,17 +8,25 @@ import type { SendableSteps } from '../model/steps';
 import { configureEditorState } from './configure-editor-state';
 import { StepSender } from './step-sender';
 
-const initialiseEditor = (
-  document: Document,
-  steps: SendableSteps[],
-  place: null | ((editor: HTMLElement) => void) | {mount: HTMLElement},
-  attributes: Record<string, string> | ((state: EditorState) => Record<string, string>),
-) => {
+const transformSteps = (sendableSteps: SendableSteps[]): Step[] =>
+  sendableSteps
+    .sort((a, b) => a.version - b.version)
+    .flatMap(content => content.steps.map(step => Step.fromJSON(schema, step)));
+
+const plugins = () => {
   const clientID = 'test'; // TODO: Generate a unique client ID for each user/session
   const version = 0;
-  const plugins = [collab({ clientID, version })];
+  return [collab({ clientID, version })];
+}
+
+const initialiseEditor = (
+  document: Document,
+  place: null | ((editor: HTMLElement) => void) | {mount: HTMLElement},
+  attributes: Record<string, string> | ((state: EditorState) => Record<string, string>),
+  steps: SendableSteps[],
+) => {
   try {
-    const state = configureEditorState(plugins, document.document);
+    const state = configureEditorState(plugins(), document.document);
     const stepSender = new StepSender(document.id);
     const view = new EditorView(place, { attributes, state, dispatchTransaction: (transaction: Transaction) => {
         const newState = view.state.apply(transaction);
@@ -26,13 +34,8 @@ const initialiseEditor = (
         stepSender.sendSteps(newState);
       }});
     stepSender.setView(view);
-    const stepsToApply = steps
-      .sort((a, b) => a.version - b.version)
-      .flatMap(content => content.steps.map(step => Step.fromJSON(schema, step)));
-    const transaction = receiveTransaction(view.state, stepsToApply, []);
+    const transaction = receiveTransaction(state, transformSteps(steps), []);
     view.dispatch(transaction);
-    // TODO if there are steps and we fail to apply them, we should prevent the editor from being initialised and show
-    //  an error message to the user. This prevents steps from being lost and the document from being corrupted.
     return view;
   } catch (err) {
     console.error(err);
@@ -40,4 +43,4 @@ const initialiseEditor = (
   }
 };
 
-export { initialiseEditor };
+export { plugins, transformSteps, initialiseEditor };

@@ -7,26 +7,27 @@ import { panel as style } from '../styles';
 
 type VersionHistoryProps = {
   steps: SendableSteps[];
-  setCurrentSteps: (steps: SendableSteps[]) => void;
-  setEditing: (readOnly: boolean) => void;
+  setStepSelection: (selection: StepSelection | null) => void;
 }
 
 const VersionHistory: FunctionComponent<VersionHistoryProps> = ({
   steps,
-  setCurrentSteps,
-  setEditing,
+  setStepSelection,
 }) => {
   const [versionHistorySelections, setVersionHistorySelections] = useState<StepSelection[]>(getVersionHistorySelections(steps));
-  const [selectedVersion, setSelectedVersion] = useState<number>();
+  const [selectedVersionIndex, setSelectedVersionIndex] = useState<number | null>(null);
+
   useEffect(() => {
     setVersionHistorySelections(getVersionHistorySelections(steps));
-    setSelectedVersion(undefined);
+    setSelectedVersionIndex(null);
+    setStepSelection(null);
   }, [steps]);
+
   const onClick = useCallback((selection: StepSelection, index: number) => {
-    setCurrentSteps(steps.slice(0, selection.to + 1));
-    setSelectedVersion(index);
-    setEditing(false);
+    setStepSelection(selection);
+    setSelectedVersionIndex(index);
   }, [steps]);
+
   return (
     <div css={style.container}>
       <div css={style.header}>Version History</div>
@@ -34,7 +35,7 @@ const VersionHistory: FunctionComponent<VersionHistoryProps> = ({
         {versionHistorySelections.map((selection, index) =>
             <button
               key={index}
-              css={[style.item, (index === selectedVersion) && style.selected]}
+              css={[style.item, (index === selectedVersionIndex) && style.selected]}
               onClick={() => onClick(selection, index)}
             >
               {formatDate(steps[selection.from]?.clientTimestamp)}

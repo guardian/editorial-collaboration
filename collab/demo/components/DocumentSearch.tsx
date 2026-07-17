@@ -11,7 +11,7 @@ import type { Document } from '../model/document';
 import { panel as style } from '../styles';
 
 type DocumentSearchProps = {
-  currentDocument: Document | undefined;
+  currentDocument: Document | null;
   setCurrentDocument: (document: Document) => void;
   setError: (error: string) => void;
 };

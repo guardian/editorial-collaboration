@@ -9,28 +9,25 @@ import { Editor } from './components/Editor';
 import { VersionHistory } from './components/VersionHistory';
 import { fetchSteps } from './libs/api';
 import type { Document } from './model/document';
-import type { SendableSteps} from './model/steps';
 import { stepServerResponse } from './model/steps';
+import type { SendableSteps, StepSelection } from './model/steps';
 import { heightInherit, typography } from './styles';
 
 const App = () => {
-  const [currentDocument, setCurrentDocument] = useState<Document | undefined>();
-  const [allSteps, setAllSteps] = useState<SendableSteps[]>([]);
-  const [currentSteps, setCurrentSteps] = useState<SendableSteps[]>([]);
-  const [editing, setEditing] = useState<boolean>(false);
-  const [error, setError] = useState<string>();
+  const [document, setDocument] = useState<Document | null>(null);
+  const [steps, setSteps] = useState<SendableSteps[]>([]);
+  const [stepSelection, setStepSelection] = useState<StepSelection | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchStepsAndSetCurrentDocument = useCallback((document: Document) => {
     void fetchSteps(document.id)
       .then(response => response.json()
       ).then(json => stepServerResponse.parse(json)
       ).then(steps => {
-        const content = steps.map(step => step.content);
-        setAllSteps(content);
-        setCurrentSteps(content);
-        setCurrentDocument(document);
-        setEditing(true);
-        setError(undefined);
+        setDocument(document);
+        setSteps(steps.map(step => step.content));
+        setStepSelection(null);
+        setError(null);
       }).catch(() => setError('Failed to fetch document'));
   }, []);
   
@@ -40,7 +37,7 @@ const App = () => {
         <AlertBanner
           level={'error'}
           showIcon={true}
-          closeButtonProps={{ onPress: () => setError(undefined) }}
+          closeButtonProps={{ onPress: () => setError(null) }}
           cssOverrides={css({width: 'unset'})}
           theme={{
             shared: {
@@ -56,7 +53,7 @@ const App = () => {
       </TopBar>
       <Sidebar layoutSmBreakpoint='above-grid' cssOverrides={css(heightInherit)}>
         <DocumentSearch
-          currentDocument={currentDocument}
+          currentDocument={document}
           setCurrentDocument={fetchStepsAndSetCurrentDocument}
           setError={setError}
         />
@@ -64,16 +61,15 @@ const App = () => {
       <Grid cssOverrides={css(heightInherit)}>
         <Item size={{sm: 12, md: 8}}>
           <Editor
-            document={currentDocument}
-            steps={currentSteps}
-            editing={editing}
+            document={document}
+            steps={steps}
+            stepSelection={stepSelection}
           />
         </Item>
         <Item size={{ sm: 12, md: 4 }} cssOverrides={css(heightInherit)}>
           <VersionHistory
-            steps={allSteps}
-            setCurrentSteps={setCurrentSteps}
-            setEditing={setEditing}
+            steps={steps}
+            setStepSelection={setStepSelection}
           />
         </Item>
       </Grid>
