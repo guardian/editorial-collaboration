@@ -13,11 +13,13 @@ import { panel as style } from '../styles';
 type DocumentSearchProps = {
   currentDocument: Document | undefined;
   setCurrentDocument: (document: Document) => void;
+  setError: (error: string) => void;
 };
 
 const DocumentSearch: FunctionComponent<DocumentSearchProps> = ({
   currentDocument,
   setCurrentDocument,
+  setError,
 }) => {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [pending, setPending] = useState(false);
@@ -30,7 +32,7 @@ const DocumentSearch: FunctionComponent<DocumentSearchProps> = ({
         const documents = z.array(document).parse(json);
         setDocuments(documents);
       })
-      .catch(err => console.error(err))
+      .catch(() => setError('Failed to fetch documents'))
       .finally(() => setPending(false));
   }, []);
 
@@ -49,12 +51,12 @@ const DocumentSearch: FunctionComponent<DocumentSearchProps> = ({
           setCurrentDocument(newDocument);
           setDocuments([...documents, newDocument]);
         })
-        .catch(err => console.error(err))
+        .catch(() => setError('Failed to create new document'))
         .finally(() => setPending(false));
     }
   }, [documents, setCurrentDocument]);
 
-  const DocumentEntry = (document: Document) => {
+  const DocumentItem = (document: Document) => {
     return (
       <button
         css={[style.item, currentDocument?.id === document.id && style.selected]}
@@ -72,7 +74,7 @@ const DocumentSearch: FunctionComponent<DocumentSearchProps> = ({
       <div css={style.contents}>
         {documents.length > 0 ?
           (documents.map(document =>
-            <DocumentEntry key={document.id} {...document} />
+            <DocumentItem key={document.id} {...document} />
           )) :
           (<div>No documents found</div>)
         }

@@ -7,6 +7,13 @@ const heightInherit = {
   overflow: 'hidden',
 };
 
+const font = `normal normal ${baseTypography.size['14-rem']} ${baseTypography.family['Guardian Text Egyptian']}`;
+
+// For overriding Stand component theming
+const typography = {
+  font,
+}
+
 const global = css({
   '#root': heightInherit,
   html: {
@@ -17,8 +24,7 @@ const global = css({
     height: '100%',
     width: '100vw',
     margin: '0 auto',
-    fontFamily: baseTypography.family['Guardian Text Egyptian'],
-    fontSize: baseTypography.size['14-rem'],
+    font,
   }
 });
 
@@ -62,4 +68,4 @@ const panel = {
   }),
 }
 
-export { heightInherit, global, panel };
+export { heightInherit, typography, global, panel };
