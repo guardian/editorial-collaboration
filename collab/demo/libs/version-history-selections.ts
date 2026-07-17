@@ -70,6 +70,9 @@ const getVersionHistorySelections = (steps: SendableSteps[], config: Config = de
 
   selections.push({ from: selectionStart, to: steps.length - 1 });
 
+  // order selections by newest to oldest
+  selections.reverse();
+
   return selections;
 }
 
