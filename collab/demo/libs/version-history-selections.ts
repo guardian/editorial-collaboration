@@ -58,7 +58,7 @@ const getVersionHistorySelections = (steps: SendableSteps[], config: Config = de
     const hasMeaningfulChange = currentSelectionChangeCount >= config.meaningfulChangeThreshold;
 
     if (hasMeaningfulChange || wouldExceedMaxWindow) {
-      selections.push({ from: selectionStart, to: index - 1 });
+      selections.push({ from: selectionStart, to: index });
       selectionStart = index;
       currentSelectionStartTimestamp = currentTimestamp;
       currentSelectionChangeCount = currentStep.steps.length;
@@ -68,7 +68,7 @@ const getVersionHistorySelections = (steps: SendableSteps[], config: Config = de
     currentSelectionChangeCount += currentStep.steps.length;
   }
 
-  selections.push({ from: selectionStart, to: steps.length - 1 });
+  selections.push({ from: selectionStart, to: steps.length });
 
   // order selections by newest to oldest
   selections.reverse();

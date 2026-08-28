@@ -1,11 +1,14 @@
 import { css } from '@emotion/react';
 import { baseColors } from '@guardian/stand';
 import { receiveTransaction } from 'prosemirror-collab';
+import type { EditorState } from 'prosemirror-state';
 import type { EditorView } from 'prosemirror-view';
+import { DecorationSet } from 'prosemirror-view';
 import type { FunctionComponent } from 'react';
 import { useEffect , useRef, useState } from 'react';
 import { configureEditorState } from '../libs/configure-editor-state';
 import { initialiseEditor, plugins, transformSteps } from '../libs/initialise-editor';
+import { getVersionHistoryDecorationRanges } from '../libs/version-history-decorations';
 import type { Document } from '../model/document';
 import type { SendableSteps, StepSelection } from '../model/steps';
 
@@ -33,6 +36,15 @@ const style = {
       ':focus-visible': {
         outline: 'none',
       },
+      '.version-history-addition': {
+        color: '#00826a',
+        backgroundColor: '#dcf5f0',
+      },
+      '.version-history-deletion': {
+        color: '#00826a',
+        backgroundColor: '#dcf5f0',
+        textDecoration: 'line-through'
+      }
     }
   }),
   preview: css({
@@ -71,11 +83,15 @@ const Editor: FunctionComponent<EditorProps> = ({
       stepSelection != null &&
       editorView?.isDestroyed === false
     ) {
-      const newState = configureEditorState(plugins(), document.document);
-      const transaction = receiveTransaction(newState, transformSteps(steps.slice(0, stepSelection.to + 1)), []);
+      const state = configureEditorState(plugins(), document.document);
+      const transaction = receiveTransaction(state, transformSteps(steps.slice(0, stepSelection.to)), []);
+      const newState = state.apply(transaction);
+      const ranges = getVersionHistoryDecorationRanges(newState.doc, transformSteps(steps), stepSelection);
+      const decorations = ranges.success ? ranges.data : [];
       editorView.setProps({
-        state: newState,
-        attributes: attributes(stepSelection)
+        state,
+        attributes: attributes(stepSelection),
+        decorations: (state: EditorState) => DecorationSet.create(state.doc, decorations)
       });
       editorView.dispatch(transaction);
     }

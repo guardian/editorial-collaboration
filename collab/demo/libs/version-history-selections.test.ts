@@ -30,9 +30,9 @@ describe('getVersionHistorySelections', () => {
     ];
 
     expect(getVersionHistorySelections(steps, minTimeOnlyConfig)).toEqual([
-      { from: 4, to: 4 },
-      { from: 2, to: 3 },
-      { from: 0, to: 1 },
+      { from: 4, to: 5 },
+      { from: 2, to: 4 },
+      { from: 0, to: 2 },
     ]);
   });
 
@@ -44,9 +44,9 @@ describe('getVersionHistorySelections', () => {
     ];
 
     expect(getVersionHistorySelections(steps, minTimeOnlyConfig)).toEqual([
-      { from: 2, to: 2 },
-      { from: 1, to: 1 },
-      { from: 0, to: 0 },
+      { from: 2, to: 3 },
+      { from: 1, to: 2 },
+      { from: 0, to: 1 },
     ]);
   });
 
@@ -63,7 +63,7 @@ describe('getVersionHistorySelections', () => {
         maxTimeStep: 60,
         meaningfulChangeThreshold: 3,
       })
-    ).toEqual([{ from: 0, to: 2 }]);
+    ).toEqual([{ from: 0, to: 3 }]);
   });
 
   it('splits on maxTimeStep even when meaningfulChangeThreshold is not met', () => {
@@ -81,8 +81,8 @@ describe('getVersionHistorySelections', () => {
         meaningfulChangeThreshold: 100,
       })
     ).toEqual([
-      { from: 3, to: 3 },
-      { from: 0, to: 2 },
+      { from: 3, to: 4 },
+      { from: 0, to: 3 },
     ]);
   });
 });

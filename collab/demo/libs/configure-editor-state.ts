@@ -7,7 +7,7 @@ const configureEditorState = (
   plugins: Plugin[] = [collab()],
   document?: unknown
 ) => {
-    if (document !== null) {
+    if (document !== undefined) {
       try {
         const doc = schema.nodeFromJSON(document);
         return EditorState.create({ doc, schema, plugins });
