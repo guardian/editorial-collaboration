@@ -80,7 +80,7 @@ systemctl start ${appName}
 			},
 			applicationLogging: { enabled: true, systemdUnitName: appName },
 			instanceType: InstanceType.of(InstanceClass.T4G, InstanceSize.MICRO),
-			imageRecipe: 'editorial-tools-jammy-node20-ARM',
+			imageRecipe: 'editorial-tools-jammy-node24-ARM',
 			instanceMetricGranularity: '5Minute',
 		});
 
