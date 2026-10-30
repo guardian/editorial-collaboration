@@ -43,6 +43,12 @@ app.post('/documents/:id/steps', authMiddleware, async (req: Request, res: Respo
     return;
   }
 
+  if (Array.isArray(id)) {
+      res.status(400);
+    res.send('Invalid ID parameter');
+    return;
+  }
+
   await database.saveSteps(id, parsedSteps).then(() => {
     res.status(202);
     res.send('Received');
