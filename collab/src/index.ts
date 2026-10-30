@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-misused-promises -- fixes middleware linting warning, which is a known issue with Express typings, see: https://github.com/DefinitelyTyped/DefinitelyTyped/issues/50871*/
 import cors from 'cors';
 import type { Request, Response } from 'express';
 /* eslint "import/no-named-as-default-member": "off" -- This is the only way I can see to avoid a warning about the (correct) way express is imported below */
@@ -40,6 +39,12 @@ app.post('/documents/:id/steps', authMiddleware, async (req: Request, res: Respo
   if (id == null) {
     res.status(400);
     res.send('Missing required ID parameter');
+    return;
+  }
+
+  if (Array.isArray(id)) {
+      res.status(400);
+    res.send('Invalid ID parameter');
     return;
   }
 
