@@ -144,4 +144,40 @@ describe('getVersionHistoryDecorations', () => {
     }
     expect(decorations.data).toEqual([]);
   });
+
+  it('filters deletions that remove content added within the selected step range', () => {
+    const steps = [
+      Step.fromJSON(schema, {
+        stepType: 'replace',
+        from: 1,
+        to: 1,
+        slice: { content: [{ type: 'text', text: 'cat' }] }
+      }),
+      Step.fromJSON(schema, {
+        stepType: 'replace',
+        from: 2,
+        to: 3
+      })
+    ];
+
+    const decorations = getVersionHistoryDecorationRanges(startingDoc, steps, { from: 0, to: 2 });
+    expect(decorations.success).toBe(true);
+    if (!decorations.success) {
+      throw new Error('Expected success result');
+    }
+
+    const additionDecoration = decorations.data.find(decoration => {
+      const spec = decoration.spec as Spec;
+      return spec.changeType === 'addition';
+    });
+    expect(additionDecoration).toBeDefined();
+    expect(additionDecoration?.from).toBe(1);
+    expect(additionDecoration?.to).toBe(3);
+
+    const deletionDecoration = decorations.data.find(decoration => {
+      const spec = decoration.spec as Spec;
+      return spec.changeType === 'deletion';
+    });
+    expect(deletionDecoration).toBeUndefined();
+  });
 });

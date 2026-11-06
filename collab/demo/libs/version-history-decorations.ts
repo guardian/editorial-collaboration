@@ -5,19 +5,55 @@ import type { Result} from '../model/result';
 import { failWith, succeedWith } from '../model/result';
 import type { StepSelection } from '../model/steps';
 
-type AdditionRange = { from: number; to: number };
-type DeletionMarker = { pos: number; text: string };
 /**
  * Takes a document and an array of steps to apply to the document. It simplifies the steps into additions and deletions,
  * and returns and array of decorations that can be used to highlight the changes in the document.
  */
+
+type AdditionRange = { from: number; to: number };
+type DeletionMarker = { pos: number; text: string };
+
+const normaliseRanges = (ranges: AdditionRange[]): AdditionRange[] =>
+  ranges
+    .filter(range => range.to > range.from)
+    .sort((a, b) => a.from - b.from)
+    .reduce<AdditionRange[]>((accumulator, range) => {
+      const previous = accumulator[accumulator.length - 1];
+      if ((previous != null) && range.from <= previous.to) {
+        previous.to = Math.max(previous.to, range.to);
+      } else {
+        accumulator.push({ ...range });
+      }
+      return accumulator;
+    }, []);
+
+const isFullyCoveredByRanges = (from: number, to: number, ranges: AdditionRange[]): boolean => {
+  if (to <= from) {
+    return false;
+  }
+  let cursor = from;
+  for (const range of ranges) {
+    if (range.to <= cursor) {
+      continue;
+    }
+    if (range.from > cursor) {
+      return false;
+    }
+    cursor = Math.max(cursor, range.to);
+    if (cursor >= to) {
+      return true;
+    }
+  }
+  return false;
+};
+
 const getVersionHistoryDecorationRanges = (doc: Node, steps: Step[], stepSelection: StepSelection): Result<Decoration[]> => {
   if (stepSelection.from < 0 || stepSelection.to > steps.length) {
     return failWith(`Step selection to index ${stepSelection.to} is greater than the number of steps ${steps.length}`);
   }
   let currentDoc = doc;
   let selectedStartDoc: Node | null = null;
-  const additions: AdditionRange[] = [];
+  let additions: AdditionRange[] = [];
   const deletions: DeletionMarker[] = [];
 
   for (let index = 0; index < stepSelection.to; index += 1) {
@@ -27,14 +63,6 @@ const getVersionHistoryDecorationRanges = (doc: Node, steps: Step[], stepSelecti
     }
 
     const map = step.getMap();
-    for (let i = 0; i < additions.length; i += 1) {
-      const addition = additions[i];
-      if (addition == null) {
-        continue;
-      }
-      addition.from = map.map(addition.from, 1);
-      addition.to = map.map(addition.to, -1);
-    }
     for (let i = 0; i < deletions.length; i += 1) {
       const deletion = deletions[i];
       if (deletion == null) {
@@ -48,17 +76,26 @@ const getVersionHistoryDecorationRanges = (doc: Node, steps: Step[], stepSelecti
     }
 
     if (index >= stepSelection.from) {
+      const stepAdditions: AdditionRange[] = [];
       map.forEach((fromA, toA, fromB, toB) => {
-        if (toB > fromB) {
-          additions.push({ from: fromB, to: toB });
-        }
         if (toA > fromA) {
           const deletedText = currentDoc.textBetween(fromA, toA, '\n', '\n');
-          if (deletedText.length > 0) {
+          const deletedSelectedAddition = isFullyCoveredByRanges(fromA, toA, additions);
+          if (deletedText.length > 0 && !deletedSelectedAddition) {
             deletions.push({ pos: fromB, text: deletedText });
           }
         }
+        if (toB > fromB) {
+          stepAdditions.push({ from: fromB, to: toB });
+        }
       });
+      additions = normaliseRanges([
+        ...additions.map(addition => ({
+          from: map.map(addition.from, 1),
+          to: map.map(addition.to, -1),
+        })),
+        ...stepAdditions
+      ]);
     }
 
     const applied = step.apply(currentDoc);
@@ -78,20 +115,7 @@ const getVersionHistoryDecorationRanges = (doc: Node, steps: Step[], stepSelecti
     return succeedWith([]);
   }
 
-  const mergedAdditions = additions
-    .filter(addition => addition.to > addition.from)
-    .sort((a, b) => a.from - b.from)
-    .reduce<AdditionRange[]>((accumulator, addition) => {
-      const previous = accumulator[accumulator.length - 1];
-      if ((previous != null) && addition.from <= previous.to) {
-        previous.to = Math.max(previous.to, addition.to);
-      } else {
-        accumulator.push({ ...addition });
-      }
-      return accumulator;
-    }, []);
-
-  const additionDecorations: Decoration[] = mergedAdditions.map(addition =>
+  const additionDecorations: Decoration[] = additions.map(addition =>
     Decoration.inline(
       addition.from,
       addition.to,
