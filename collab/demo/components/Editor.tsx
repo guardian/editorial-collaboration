@@ -1,19 +1,26 @@
 import { css } from '@emotion/react';
 import { baseColors } from '@guardian/stand';
+import { Button } from '@guardian/stand/button';
 import { receiveTransaction } from 'prosemirror-collab';
 import type { EditorState } from 'prosemirror-state';
 import type { EditorView } from 'prosemirror-view';
 import { DecorationSet } from 'prosemirror-view';
 import type { FunctionComponent } from 'react';
-import { useEffect , useRef, useState } from 'react';
+import { useCallback , useEffect , useRef, useState } from 'react';
+import { v4 } from 'uuid';
+import { registerDocument } from '../libs/api';
 import { configureEditorState } from '../libs/configure-editor-state';
 import { initialiseEditor, plugins, transformSteps } from '../libs/initialise-editor';
 import { getVersionHistoryDecorationRanges } from '../libs/version-history-decorations';
-import type { Document } from '../model/document';
+import type { Document} from '../model/document';
+import { document } from '../model/document';
 import type { SendableSteps, StepSelection } from '../model/steps';
+import { panel } from '../styles';
 
 type EditorProps = {
-  document: Document | null;
+  currentDocument: Document | null;
+  createNewDocument: (document: Document) => void;
+  setError: (error: string) => void;
   steps: SendableSteps[];
   stepSelection: StepSelection | null;
 };
@@ -57,32 +64,35 @@ const readOnlyAttributes = { ...baselineAttributes, contentEditable: 'false' };
 const attributes = (selection: StepSelection | null) => selection == null ? baselineAttributes : readOnlyAttributes
 
 const Editor: FunctionComponent<EditorProps> = ({
-  document,
+  currentDocument,
+  createNewDocument,
+  setError,
   steps,
   stepSelection,
 }) => {
+  const [pending, setPending] = useState<boolean>(false);
   const [editorView, setEditorView] = useState<EditorView | null>(null);
   const editorRef = useRef(null);
   const documentIdRef = useRef<string>(null);
 
   // initialise the editor exactly once whenever the document changes.
   useEffect(() => {
-    if (document != null && documentIdRef.current !== document.id) {
-      documentIdRef.current = document.id;
+    if (currentDocument != null && documentIdRef.current !== currentDocument.id) {
+      documentIdRef.current = currentDocument.id;
       editorView?.destroy();
-      const newEditorView = initialiseEditor(document, editorRef.current, attributes(stepSelection), steps);
+      const newEditorView = initialiseEditor(currentDocument, editorRef.current, attributes(stepSelection), steps);
       setEditorView(newEditorView);
       newEditorView?.focus();
     }
-  }, [editorView, document, stepSelection]);
+  }, [editorView, currentDocument, stepSelection]);
 
   // update editor state when step selection changes.
   useEffect(() => {
     if (
-      document != null &&
+      currentDocument != null &&
       editorView?.isDestroyed === false
     ) {
-      const state = configureEditorState(plugins(), document.document);
+      const state = configureEditorState(plugins(), currentDocument.document);
       const stepsToApply = (stepSelection != null) ? steps.slice(0, stepSelection.to) : steps;
       const transaction = receiveTransaction(state, transformSteps(stepsToApply), []);
       state.apply(transaction);
@@ -95,11 +105,28 @@ const Editor: FunctionComponent<EditorProps> = ({
       });
       editorView.dispatch(transaction);
     }
-  }, [editorView, document, stepSelection]);
+  }, [editorView, currentDocument, stepSelection]);
+
+  const onClick = useCallback(() => {
+    setPending(true);
+    const id = v4();
+    const state = configureEditorState();
+    void registerDocument(id, state)
+      .then(response => response.json())
+      .then(json => {
+        const newDocument = document.parse(json);
+        createNewDocument(newDocument);
+      })
+      .catch(() => setError('Failed to create new document'))
+      .finally(() => setPending(false));
+  }, []);
 
   return (
-    <>{(document == null) ?
-      <div css={style.placeholder}>Select or create a document to start editing...</div> :
+    <>{(currentDocument == null) ?
+      <>
+        <div css={style.placeholder}>Select or create a document to start editing...</div>
+        <Button isDisabled={pending} cssOverrides={panel.button} onClick={onClick}>Create New Document</Button>
+      </> :
       <div css={[style.editor, stepSelection != null && style.preview]} ref={editorRef}/>}
     </>
   );
