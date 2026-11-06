@@ -32,14 +32,18 @@ const VersionHistory: FunctionComponent<VersionHistoryProps> = ({
     <div css={style.container}>
       <div css={style.header}>Version History</div>
       <div css={style.contents}>
-        {versionHistorySelections.map((selection, index) =>
+        {versionHistorySelections.map((selection, index) => {
+          const timestamp = steps[selection.from]?.clientTimestamp;
+          return (
             <button
               key={index}
               css={[style.item, (index === selectedVersionIndex) && style.selected]}
               onClick={() => onClick(selection, index)}
             >
-              {formatDate(steps[selection.from]?.clientTimestamp)}
+              {(timestamp != null) && formatDate(timestamp)}
             </button>
+          )
+        }
         )}
       </div>
     </div>
