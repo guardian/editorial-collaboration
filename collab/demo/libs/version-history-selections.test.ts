@@ -9,12 +9,6 @@ const buildSendableStep = (overrides: Partial<SendableSteps> = {}): SendableStep
   ...overrides,
 });
 
-const minTimeOnlyConfig = {
-  minTimeStep: 5,
-  maxTimeStep: 60,
-  meaningfulChangeThreshold: 1,
-};
-
 describe('getVersionHistorySelections', () => {
   it('returns an empty array when no steps are provided', () => {
     expect(getVersionHistorySelections([])).toEqual([]);
@@ -29,7 +23,11 @@ describe('getVersionHistorySelections', () => {
       buildSendableStep({ version: 5, clientTimestamp: '2026-07-03T10:20:00.000Z', steps: [{}] }),
     ];
 
-    expect(getVersionHistorySelections(steps, minTimeOnlyConfig)).toEqual([
+    expect(getVersionHistorySelections(steps, {
+      minTimeStep: 5,
+      maxTimeStep: 60,
+      meaningfulChangeThreshold: 1,
+    })).toEqual([
       { from: 4, to: 5 },
       { from: 2, to: 4 },
       { from: 0, to: 2 },
@@ -43,7 +41,11 @@ describe('getVersionHistorySelections', () => {
       buildSendableStep({ version: 3, clientTimestamp: '2026-07-03T10:10:00.000Z', steps: [{}] }),
     ];
 
-    expect(getVersionHistorySelections(steps, minTimeOnlyConfig)).toEqual([
+    expect(getVersionHistorySelections(steps, {
+      minTimeStep: 5,
+      maxTimeStep: 60,
+      meaningfulChangeThreshold: 1,
+    })).toEqual([
       { from: 2, to: 3 },
       { from: 1, to: 2 },
       { from: 0, to: 1 },
