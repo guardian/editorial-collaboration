@@ -1,6 +1,5 @@
 import { schema } from 'prosemirror-schema-basic';
 import { Step } from 'prosemirror-transform';
-import { STEPS_FIXTURE } from '../fixtures/steps-fixture';
 import { getVersionHistoryDecorationRanges } from './version-history-decorations';
 
 type Spec = {
@@ -27,7 +26,21 @@ describe('getVersionHistoryDecorations', () => {
   });
 
   it('returns a decoration range for text addition', () => {
-    const decorations = getVersionHistoryDecorationRanges(startingDoc, STEPS_FIXTURE, { from: 0, to: 2 });
+    const steps = [
+      Step.fromJSON(schema, {
+        stepType: 'replace',
+        from: 1,
+        to: 1,
+        slice: { content: [{ type: 'text', text: 'cat' }] }
+      }),
+      Step.fromJSON(schema, {
+        stepType: 'replace',
+        from: 4,
+        to: 4,
+        slice: { content: [{ type: 'text', text: 's' }] }
+      })
+    ];
+    const decorations = getVersionHistoryDecorationRanges(startingDoc, steps, { from: 0, to: 1 });
     expect(decorations.success).toBe(true);
     if (!decorations.success) {
       throw new Error('Expected success result');
@@ -36,7 +49,7 @@ describe('getVersionHistoryDecorations', () => {
     const addition = decorations.data[0];
     const spec = addition?.spec as Spec | undefined;
     expect(addition?.from).toBe(1);
-    expect(addition?.to).toBe(3);
+    expect(addition?.to).toBe(4);
     expect(spec?.changeType).toBe('addition');
   });
 
