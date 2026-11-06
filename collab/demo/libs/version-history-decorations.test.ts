@@ -40,7 +40,7 @@ describe('getVersionHistoryDecorations', () => {
     expect(spec?.changeType).toBe('addition');
   });
 
-  it('returns a deletion widget for deleted text', () => {
+  it('returns deletions for deleted text', () => {
     const steps = [
       Step.fromJSON(schema, {
         stepType: 'replace',
@@ -107,5 +107,28 @@ describe('getVersionHistoryDecorations', () => {
     expect(deletionDecoration).toBeDefined();
     const spec = deletionDecoration?.spec as Spec | undefined;
     expect(spec?.deletedText).toBe('a');
+  });
+
+  it('returns no decorations when additions and deletions result in no net text change', () => {
+    const steps = [
+      Step.fromJSON(schema, {
+        stepType: 'replace',
+        from: 1,
+        to: 1,
+        slice: { content: [{ type: 'text', text: 'cat' }] }
+      }),
+      Step.fromJSON(schema, {
+        stepType: 'replace',
+        from: 1,
+        to: 4
+      })
+    ];
+
+    const decorations = getVersionHistoryDecorationRanges(startingDoc, steps, { from: 0, to: 2 });
+    expect(decorations.success).toBe(true);
+    if (!decorations.success) {
+      throw new Error('Expected success result');
+    }
+    expect(decorations.data).toEqual([]);
   });
 });

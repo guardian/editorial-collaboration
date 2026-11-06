@@ -16,6 +16,7 @@ const getVersionHistoryDecorationRanges = (doc: Node, steps: Step[], stepSelecti
     return failWith(`Step selection to index ${stepSelection.to} is greater than the number of steps ${steps.length}`);
   }
   let currentDoc = doc;
+  let selectedStartDoc: Node | null = null;
   const additions: AdditionRange[] = [];
   const deletions: DeletionMarker[] = [];
 
@@ -42,6 +43,10 @@ const getVersionHistoryDecorationRanges = (doc: Node, steps: Step[], stepSelecti
       deletion.pos = map.map(deletion.pos, -1);
     }
 
+    if (index === stepSelection.from) {
+      selectedStartDoc = currentDoc;
+    }
+
     if (index >= stepSelection.from) {
       map.forEach((fromA, toA, fromB, toB) => {
         if (toB > fromB) {
@@ -64,6 +69,13 @@ const getVersionHistoryDecorationRanges = (doc: Node, steps: Step[], stepSelecti
       return failWith('Step application did not return a document');
     }
     currentDoc = applied.doc;
+  }
+
+  const effectiveStartDoc = selectedStartDoc ?? currentDoc;
+  const startText = effectiveStartDoc.textBetween(0, effectiveStartDoc.content.size, '\n', '\n');
+  const endText = currentDoc.textBetween(0, currentDoc.content.size, '\n', '\n');
+  if (additions.length > 0 && deletions.length > 0 && startText === endText) {
+    return succeedWith([]);
   }
 
   const mergedAdditions = additions
