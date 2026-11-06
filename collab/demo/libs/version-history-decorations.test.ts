@@ -1,5 +1,6 @@
 import { schema } from 'prosemirror-schema-basic';
 import { Step } from 'prosemirror-transform';
+import { STEP_FIXTURE } from '../fixtures/steps';
 import { getVersionHistoryDecorationRanges } from './version-history-decorations';
 
 type Spec = {
@@ -179,5 +180,65 @@ describe('getVersionHistoryDecorations', () => {
       return spec.changeType === 'deletion';
     });
     expect(deletionDecoration).toBeUndefined();
+  });
+
+  it('removes duplicated added/deleted content and keeps only the net changed character', () => {
+    const steps = STEP_FIXTURE
+      .flatMap(entry => entry.steps)
+      .map(step => Step.fromJSON(schema, step));
+
+    let startDoc = startingDoc;
+    for (let index = 0; index < 220; index += 1) {
+      const applied = steps[index]?.apply(startDoc);
+      if (applied?.doc != null) {
+        startDoc = applied.doc;
+      }
+    }
+    let endDoc = startDoc;
+    for (let index = 220; index < 249; index += 1) {
+      const applied = steps[index]?.apply(endDoc);
+      if (applied?.doc != null) {
+        endDoc = applied.doc;
+      }
+    }
+    const diffStart = startDoc.content.findDiffStart(endDoc.content);
+
+    const decorations = getVersionHistoryDecorationRanges(startingDoc, steps, { from: 220, to: 249 });
+    expect(decorations.success).toBe(true);
+    if (!decorations.success) {
+      throw new Error('Expected success result');
+    }
+
+    const totalAddedCharacters = decorations.data
+      .filter(decoration => {
+        const spec = decoration.spec as Spec;
+        return spec.changeType === 'addition';
+      })
+      .reduce((count, decoration) => count + (decoration.to - decoration.from), 0);
+
+    const totalDeletedCharacters = decorations.data
+      .filter(decoration => {
+        const spec = decoration.spec as Spec;
+        return spec.changeType === 'deletion';
+      })
+      .reduce((count, decoration) => {
+        const spec = decoration.spec as Spec;
+        return count + (spec.deletedText?.length ?? 0);
+      }, 0);
+
+    const additionDecoration = decorations.data.find(decoration => {
+      const spec = decoration.spec as Spec;
+      return spec.changeType === 'addition';
+    });
+
+    const deletionDecoration = decorations.data.find(decoration => {
+      const spec = decoration.spec as Spec;
+      return spec.changeType === 'deletion';
+    });
+
+    expect(totalAddedCharacters).toBe(1);
+    expect(totalDeletedCharacters).toBe(1);
+    expect(additionDecoration?.from).toBe(diffStart);
+    expect(deletionDecoration?.from).toBe(diffStart);
   });
 });
