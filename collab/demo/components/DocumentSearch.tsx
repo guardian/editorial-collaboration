@@ -30,7 +30,7 @@ const DocumentSearch: FunctionComponent<DocumentSearchProps> = ({
       .then(response => response.json())
       .then(json => {
         const documents = z.array(document).parse(json);
-        setDocuments(documents);
+        setDocuments(documents.reverse());
       })
       .catch(() => setError('Failed to fetch documents'))
       .finally(() => setPending(false));
@@ -49,7 +49,7 @@ const DocumentSearch: FunctionComponent<DocumentSearchProps> = ({
         .then(json => {
           const newDocument = document.parse(json);
           setCurrentDocument(newDocument);
-          setDocuments([...documents, newDocument]);
+          setDocuments([newDocument, ...documents]);
         })
         .catch(() => setError('Failed to create new document'))
         .finally(() => setPending(false));
