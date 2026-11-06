@@ -1,7 +1,12 @@
 import { schema } from 'prosemirror-schema-basic';
-import type { Step } from 'prosemirror-transform';
+import { Step } from 'prosemirror-transform';
 import { STEPS_FIXTURE } from '../fixtures/steps-fixture';
 import { getVersionHistoryDecorationRanges } from './version-history-decorations';
+
+type Spec = {
+  changeType: 'addition' | 'deletion';
+  deletedText?: string;
+}
 
 const startingDoc = schema.nodeFromJSON({
   type: 'doc',
@@ -24,32 +29,83 @@ describe('getVersionHistoryDecorations', () => {
   it('returns a decoration range for text addition', () => {
     const decorations = getVersionHistoryDecorationRanges(startingDoc, STEPS_FIXTURE, { from: 0, to: 2 });
     expect(decorations.success).toBe(true);
-    expect(decorations.data).toEqual([
-      {
+    if (!decorations.success) {
+      throw new Error('Expected success result');
+    }
+    expect(decorations.data).toHaveLength(1);
+    const addition = decorations.data[0];
+    const spec = addition?.spec as Spec | undefined;
+    expect(addition?.from).toBe(1);
+    expect(addition?.to).toBe(3);
+    expect(spec?.changeType).toBe('addition');
+  });
+
+  it('returns a deletion widget for deleted text', () => {
+    const steps = [
+      Step.fromJSON(schema, {
+        stepType: 'replace',
         from: 1,
-        to: 3,
-        type: {
-          attrs: {
-            class: 'version-history-addition'
-          },
-          spec: {}
-        }
-      }
-    ]);
-  });
+        to: 1,
+        slice: { content: [{ type: 'text', text: 'cat' }] }
+      }),
+      Step.fromJSON(schema, {
+        stepType: 'replace',
+        from: 2,
+        to: 3
+      })
+    ];
 
-  it('returns a decoration range for text addition that is not at the start of the document', () => {
-    const decorations = getVersionHistoryDecorationRanges(startingDoc, STEPS_FIXTURE, { from: 183, to: 184 });
+    const decorations = getVersionHistoryDecorationRanges(startingDoc, steps, { from: 1, to: 2 });
     expect(decorations.success).toBe(true);
-    expect(decorations.data).toEqual([]);
+    if (!decorations.success) {
+      throw new Error('Expected success result');
+    }
+    const deletionDecoration = decorations.data.find(decoration => {
+      const spec = decoration.spec as Spec;
+      return spec.changeType === 'deletion'
+    });
+    expect(deletionDecoration).toBeDefined();
+    expect(deletionDecoration?.from).toBe(2);
+    const spec = deletionDecoration?.spec as Spec | undefined;
+    expect(spec?.deletedText).toBe('a');
   });
 
-  it('returns a decoration range for deleted content', () => {
+  it('returns addition and deletion decorations for same-length replacement', () => {
+    const steps = [
+      Step.fromJSON(schema, {
+        stepType: 'replace',
+        from: 1,
+        to: 1,
+        slice: { content: [{ type: 'text', text: 'cat' }] }
+      }),
+      Step.fromJSON(schema, {
+        stepType: 'replace',
+        from: 2,
+        to: 3,
+        slice: { content: [{ type: 'text', text: 'o' }] }
+      })
+    ];
 
+    const decorations = getVersionHistoryDecorationRanges(startingDoc, steps, { from: 1, to: 2 });
+    expect(decorations.success).toBe(true);
+    if (!decorations.success) {
+      throw new Error('Expected success result');
+    }
+
+    const additionDecoration = decorations.data.find(decoration => {
+      const spec = decoration.spec as Spec;
+      return spec.changeType === 'addition';
+    });
+    expect(additionDecoration).toBeDefined();
+    expect(additionDecoration?.from).toBe(2);
+    expect(additionDecoration?.to).toBe(3);
+
+    const deletionDecoration = decorations.data.find(decoration => {
+      const spec = decoration.spec as Spec;
+      return spec.changeType === 'deletion';
+    });
+    expect(deletionDecoration).toBeDefined();
+    const spec = deletionDecoration?.spec as Spec | undefined;
+    expect(spec?.deletedText).toBe('a');
   });
-
-  it.todo('creates a combined decoration set for multiple step batches');
-
-  it.todo('provides reusable builders for future step-based scenarios');
 });
-

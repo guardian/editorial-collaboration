@@ -85,8 +85,8 @@ const Editor: FunctionComponent<EditorProps> = ({
     ) {
       const state = configureEditorState(plugins(), document.document);
       const transaction = receiveTransaction(state, transformSteps(steps.slice(0, stepSelection.to)), []);
-      const newState = state.apply(transaction);
-      const ranges = getVersionHistoryDecorationRanges(newState.doc, transformSteps(steps), stepSelection);
+      state.apply(transaction);
+      const ranges = getVersionHistoryDecorationRanges(state.doc, transformSteps(steps), stepSelection);
       const decorations = ranges.success ? ranges.data : [];
       editorView.setProps({
         state,
