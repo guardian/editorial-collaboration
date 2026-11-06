@@ -1,3 +1,4 @@
+import { Button } from '@guardian/stand/button';
 import type { FunctionComponent } from 'react';
 import { useCallback , useEffect , useState } from 'react';
 import { formatDate } from '../libs/format-date';
@@ -23,22 +24,30 @@ const VersionHistory: FunctionComponent<VersionHistoryProps> = ({
     setStepSelection(null);
   }, [steps]);
 
-  const onClick = useCallback((selection: StepSelection, index: number) => {
+  const onVersionClick = useCallback((selection: StepSelection, index: number) => {
     setStepSelection(selection);
     setSelectedVersionIndex(index);
-  }, [steps]);
+  }, []);
+
+  const onContinueEditingClick = useCallback(() => {
+    setSelectedVersionIndex(null);
+    setStepSelection(null);
+  }, []);
 
   return (
     <div css={style.container}>
       <div css={style.header}>Version History</div>
       <div css={style.contents}>
+        {(selectedVersionIndex != null) && (
+          <Button cssOverrides={style.button} onClick={onContinueEditingClick}>Continue editing</Button>
+        )}
         {versionHistorySelections.map((selection, index) => {
           const timestamp = steps[selection.from]?.clientTimestamp;
           return (
             <button
               key={index}
               css={[style.item, (index === selectedVersionIndex) && style.selected]}
-              onClick={() => onClick(selection, index)}
+              onClick={() => onVersionClick(selection, index)}
             >
               {(timestamp != null) && formatDate(timestamp)}
             </button>

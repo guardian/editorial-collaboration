@@ -52,7 +52,7 @@ const style = {
   })
 }
 
-const baselineAttributes = { class: EDITOR_CLASS };
+const baselineAttributes = { class: EDITOR_CLASS, contentEditable: 'true' };
 const readOnlyAttributes = { ...baselineAttributes, contentEditable: 'false' };
 const attributes = (selection: StepSelection | null) => selection == null ? baselineAttributes : readOnlyAttributes
 
@@ -80,13 +80,13 @@ const Editor: FunctionComponent<EditorProps> = ({
   useEffect(() => {
     if (
       document != null &&
-      stepSelection != null &&
       editorView?.isDestroyed === false
     ) {
       const state = configureEditorState(plugins(), document.document);
-      const transaction = receiveTransaction(state, transformSteps(steps.slice(0, stepSelection.to)), []);
+      const stepsToApply = (stepSelection != null) ? steps.slice(0, stepSelection.to) : steps;
+      const transaction = receiveTransaction(state, transformSteps(stepsToApply), []);
       state.apply(transaction);
-      const ranges = getVersionHistoryDecorationRanges(state.doc, transformSteps(steps), stepSelection);
+      const ranges = (stepSelection != null) ? getVersionHistoryDecorationRanges(state.doc, transformSteps(steps), stepSelection) : { success: false, data: [] };
       const decorations = ranges.success ? ranges.data : [];
       editorView.setProps({
         state,
