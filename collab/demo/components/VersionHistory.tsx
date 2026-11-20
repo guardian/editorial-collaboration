@@ -1,4 +1,4 @@
-import { Button } from '@guardian/stand/button';
+import { Button } from '@guardian/stand/Button';
 import type { FunctionComponent } from 'react';
 import { useCallback , useEffect , useState } from 'react';
 import { formatDate } from '../libs/format-date';

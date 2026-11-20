@@ -7,7 +7,7 @@ const heightInherit = {
   overflow: 'hidden',
 };
 
-const font = `normal normal ${baseTypography.size['14-rem']} ${baseTypography.family['Guardian Text Egyptian']}`;
+const font = `normal normal ${baseTypography.size['14Rem']} ${baseTypography.family.guardianTextEgyptian}`;
 
 // For overriding Stand component theming
 const typography = {
@@ -40,8 +40,8 @@ const panel = {
     width: 'stretch',
     backgroundColor: baseColors.neutral[700],
     padding: 10,
-    fontSize: baseTypography.size['16-rem'],
-    fontWeight: baseTypography.weight['Guardian Text Egyptian'].bold,
+    fontSize: baseTypography.size['16Rem'],
+    fontWeight: baseTypography.weight.guardianTextEgyptian.bold,
   }),
   contents: css({
     display: 'flex',
@@ -59,8 +59,8 @@ const panel = {
     textAlign: 'left',
   }),
   button: css({
-    fontFamily: baseTypography.family['Guardian Text Egyptian'],
-    fontWeight: baseTypography.weight['Guardian Text Egyptian'].normal,
+    fontFamily: baseTypography.family.guardianTextEgyptian,
+    fontWeight: baseTypography.weight.guardianTextEgyptian.normal,
     width: 'fit-content',
   }),
   selected: css({

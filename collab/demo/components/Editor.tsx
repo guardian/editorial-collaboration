@@ -1,6 +1,6 @@
 import { css } from '@emotion/react';
 import { baseColors } from '@guardian/stand';
-import { Button } from '@guardian/stand/button';
+import { Button } from '@guardian/stand/Button';
 import { receiveTransaction } from 'prosemirror-collab';
 import type { EditorState } from 'prosemirror-state';
 import type { EditorView } from 'prosemirror-view';
@@ -60,7 +60,7 @@ const style = {
     bottom: 0,
     width: '100%',
     backgroundColor: `${baseColors.neutral['850']}`,
-    padding: 4,
+    padding: 8,
   }),
   preview: css({
     color: baseColors.neutral['200'],

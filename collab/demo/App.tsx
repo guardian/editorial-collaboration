@@ -1,7 +1,7 @@
 import { css } from '@emotion/react';
-import { AlertBanner } from '@guardian/stand/alert-banner';
-import { Grid, Item } from '@guardian/stand/grid';
-import { Layout, Sidebar } from '@guardian/stand/layout';
+import { AlertBanner } from '@guardian/stand/AlertBanner';
+import { Grid, Item } from '@guardian/stand/Grid';
+import { Layout } from '@guardian/stand/Layout';
 import { TopBar, TopBarToolName } from '@guardian/stand/TopBar';
 import { useCallback, useEffect, useState } from 'react';
 import { z } from 'zod';
@@ -16,9 +16,6 @@ import type { SendableSteps, StepSelection } from './model/steps';
 import { heightInherit, typography } from './styles';
 
 const style = {
-  main: css({
-    padding: 'unset',
-  }),
   editor: css({
     position: 'relative'
   })
@@ -71,49 +68,66 @@ const App = () => {
   return (
     <Layout cssOverrides={css(heightInherit)}>
       {(error != null) && (
-        <AlertBanner
-          level={'error'}
-          showIcon={true}
-          closeButtonProps={{ onPress: () => setError(null) }}
-          cssOverrides={css({width: 'unset'})}
-          theme={{
-            shared: {
-              content: {
-                typography
+        <Layout.AlertBanner>
+          <AlertBanner
+            level={'error'}
+            showIcon={true}
+            closeButtonProps={{ onPress: () => setError(null) }}
+            cssOverrides={css({width: 'unset'})}
+            theme={{
+              shared: {
+                content: {
+                  typography
+                }
               }
-            }
-          }}
-        >{error}</AlertBanner>
+            }}
+          >{error}</AlertBanner>
+        </Layout.AlertBanner>
       )}
-      <TopBar>
-        <TopBarToolName name='Edit History' favicon={{ icon: 'history' }} />
-      </TopBar>
-      <Sidebar layoutSmBreakpoint='above-grid' cssOverrides={css(heightInherit)}>
+      <Layout.TopBar>
+        <TopBar>
+          <TopBarToolName name='Edit History' favicon={{ icon: 'history' }} />
+        </TopBar>
+      </Layout.TopBar>
+      <Layout.Sidebar layoutSmBreakpoint='above-grid' cssOverrides={css(heightInherit)}>
         <DocumentSearch
           documents={documents}
           currentDocument={currentDocument}
           setCurrentDocument={fetchStepsAndSetCurrentDocument}
           setError={setError}
         />
-      </Sidebar>
-      <Grid cssOverrides={[css(heightInherit), style.main]}>
-        <Item size={{sm: 12, md: 8}} cssOverrides={style.editor}>
-          <Editor
-            currentDocument={currentDocument}
-            closeEditor={closeEditor}
-            createNewDocument={createNewDocument}
-            setError={setError}
-            steps={steps}
-            stepSelection={stepSelection}
-          />
-        </Item>
-        <Item size={{ sm: 12, md: 4 }} cssOverrides={css(heightInherit)}>
-          <VersionHistory
-            steps={steps}
-            setStepSelection={setStepSelection}
-          />
-        </Item>
-      </Grid>
+      </Layout.Sidebar>
+      <Layout.Main
+        paddingTop={false}
+        paddingBottom={false}
+        cssOverrides={css(heightInherit)}
+      >
+        <Grid
+          theme={{
+            sm: { padding: '0px' },
+            md: { padding: '0px' },
+            lg: { padding: '0px' },
+          }}
+          cssOverrides={css(heightInherit)}
+        >
+          <Item size={8} cssOverrides={style.editor}>
+            <Editor
+              currentDocument={currentDocument}
+              closeEditor={closeEditor}
+              createNewDocument={createNewDocument}
+              setError={setError}
+              steps={steps}
+              stepSelection={stepSelection}
+            />
+          </Item>
+          <Item size={4} cssOverrides={css(heightInherit)}>
+            <VersionHistory
+              steps={steps}
+              setStepSelection={setStepSelection}
+            />
+          </Item>
+        </Grid>
+      </Layout.Main>
     </Layout>
   );
 }

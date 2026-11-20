@@ -33,7 +33,7 @@
     "@guardian/eslint-config-typescript": "^10.0.1",
     "@guardian/pan-domain-node": "^1.2.3",
     "@guardian/prosemirror-invisibles": "^3.1.1",
-    "@guardian/stand": "^0.0.37",
+    "@guardian/stand": "2.1.0",
     "@guardian/tsconfig": "^0.3.1",
     "@playwright/test": "^1.60.0",
     "@types/cors": "^2.8.17",
