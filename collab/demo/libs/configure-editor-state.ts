@@ -1,7 +1,7 @@
 import { collab } from 'prosemirror-collab';
-import { schema } from 'prosemirror-schema-basic';
 import type { Plugin } from 'prosemirror-state';
 import { EditorState } from 'prosemirror-state';
+import { schema } from './schema';
 
 const configureEditorState = (
   plugins: Plugin[] = [collab()],

@@ -1,11 +1,13 @@
 import { collab, receiveTransaction } from 'prosemirror-collab';
-import { schema } from 'prosemirror-schema-basic';
+import { baseKeymap, chainCommands, createParagraphNear, liftEmptyBlock, newlineInCode, splitBlock } from 'prosemirror-commands';
+import { keymap } from 'prosemirror-keymap';
 import type { EditorState, Transaction } from 'prosemirror-state';
 import { Step } from 'prosemirror-transform';
 import { EditorView } from 'prosemirror-view';
 import type { Document } from '../model/document';
 import type { SendableSteps } from '../model/steps';
 import { configureEditorState } from './configure-editor-state';
+import { schema } from './schema';
 import { StepSender } from './step-sender';
 
 const transformSteps = (sendableSteps: SendableSteps[]): Step[] =>
@@ -13,10 +15,29 @@ const transformSteps = (sendableSteps: SendableSteps[]): Step[] =>
     .sort((a, b) => a.version - b.version)
     .flatMap(content => content.steps.map(step => Step.fromJSON(schema, step)));
 
+const insertHardBreak = (state: EditorState, dispatch?: (transaction: Transaction) => void) => {
+  const hardBreak = state.schema.nodes['hard_break'];
+  if (hardBreak == null) {
+    return false;
+  }
+  if (dispatch != null) {
+    dispatch(state.tr.replaceSelectionWith(hardBreak.create()).scrollIntoView());
+  }
+  return true;
+};
+
 const plugins = () => {
   const clientID = 'test'; // TODO: Generate a unique client ID for each user/session
   const version = 0;
-  return [collab({ clientID, version })];
+  return [
+    keymap({
+      Enter: chainCommands(newlineInCode, createParagraphNear, liftEmptyBlock, splitBlock),
+      'Shift-Enter': insertHardBreak,
+      'Mod-Enter': insertHardBreak,
+    }),
+    keymap(baseKeymap),
+    collab({ clientID, version }),
+  ];
 }
 
 const initialiseEditor = (
