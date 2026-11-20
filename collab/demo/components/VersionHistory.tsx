@@ -1,7 +1,7 @@
 import { Button } from '@guardian/stand/Button';
 import type { FunctionComponent } from 'react';
 import { useCallback , useEffect , useState } from 'react';
-import { formatDate } from '../libs/format-date';
+import { formatDate } from '../libs/date';
 import { getVersionHistorySelections } from '../libs/version-history-selections';
 import type { SendableSteps, StepSelection } from '../model/steps';
 import { panel as style } from '../styles';

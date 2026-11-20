@@ -15,6 +15,7 @@ import { getVersionHistoryDecorationRanges } from '../libs/version-history-decor
 import type { Document} from '../model/document';
 import { document } from '../model/document';
 import type { SendableSteps, StepSelection } from '../model/steps';
+import type { AuthenticatedUser } from '../model/user';
 import { panel } from '../styles';
 
 type EditorProps = {
@@ -24,6 +25,7 @@ type EditorProps = {
   setError: (error: string) => void;
   steps: SendableSteps[];
   stepSelection: StepSelection | null;
+  user: AuthenticatedUser | null;
 };
 
 const EDITOR_CLASS = 'rich-text-editor';
@@ -78,6 +80,7 @@ const Editor: FunctionComponent<EditorProps> = ({
   setError,
   steps,
   stepSelection,
+  user,
 }) => {
   const [pending, setPending] = useState<boolean>(false);
   const [editorView, setEditorView] = useState<EditorView | null>(null);
@@ -89,11 +92,11 @@ const Editor: FunctionComponent<EditorProps> = ({
     if (currentDocument != null && documentIdRef.current !== currentDocument.id) {
       documentIdRef.current = currentDocument.id;
       editorView?.destroy();
-      const newEditorView = initialiseEditor(currentDocument, editorRef.current, attributes(stepSelection), steps);
+      const newEditorView = initialiseEditor(currentDocument, editorRef.current, attributes(stepSelection), steps, user);
       setEditorView(newEditorView);
       newEditorView?.focus();
     }
-  }, [editorView, currentDocument, stepSelection]);
+  }, [editorView, currentDocument, stepSelection, user]);
 
   // update editor state when step selection changes.
   useEffect(() => {

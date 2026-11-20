@@ -1,6 +1,6 @@
 import type { FunctionComponent } from 'react';
 import { useCallback } from 'react';
-import { formatDate } from '../libs/format-date';
+import { formatDate } from '../libs/date';
 import type { Document } from '../model/document';
 import { panel as style } from '../styles';
 

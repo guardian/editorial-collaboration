@@ -7,6 +7,7 @@ import { EditorView } from 'prosemirror-view';
 import { v4 as uuid } from 'uuid';
 import type { Document } from '../model/document';
 import type { SendableSteps } from '../model/steps';
+import type { AuthenticatedUser } from '../model/user';
 import { configureEditorState } from './configure-editor-state';
 import { schema } from './schema';
 import { StepSender } from './step-sender';
@@ -78,10 +79,11 @@ const initialiseEditor = (
   place: null | ((editor: HTMLElement) => void) | {mount: HTMLElement},
   attributes: Record<string, string> | ((state: EditorState) => Record<string, string>),
   steps: SendableSteps[],
+  user: AuthenticatedUser | null,
 ) => {
   try {
     const state = configureEditorState(plugins(steps), document.document);
-    const stepSender = new StepSender(document.id);
+    const stepSender = new StepSender(document.id, user);
     const view = new EditorView(place, { attributes, state, dispatchTransaction: (transaction: Transaction) => {
         const newState = view.state.apply(transaction);
         view.updateState(newState);

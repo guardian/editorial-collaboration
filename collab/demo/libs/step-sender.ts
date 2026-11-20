@@ -2,17 +2,20 @@ import { receiveTransaction, sendableSteps } from 'prosemirror-collab';
 import type { EditorState } from 'prosemirror-state';
 import type { EditorView } from 'prosemirror-view';
 import type { SendableSteps } from '../model/steps';
+import type { AuthenticatedUser } from '../model/user';
 import { sendStepsToServer } from './api';
 
 class StepSender {
   private MAX_STEPS_PER_REQUEST = 500;
   private requestInFlight = false;
   private readonly documentId: string;
+  private readonly user: AuthenticatedUser | null;
   private view?: EditorView;
   private buffer: SendableSteps[] = [];
 
-  constructor(documentId: string) {
+  constructor(documentId: string, user: AuthenticatedUser | null) {
     this.documentId = documentId;
+    this.user = user;
   }
 
   public setView = (view: EditorView): void => {
@@ -34,6 +37,12 @@ class StepSender {
         steps: steps.steps.map(step => step.toJSON() as unknown),
         clientID: steps.clientID,
         clientTimestamp: new Date().toISOString(),
+        user: this.user == null ? undefined : {
+          email: this.user.email,
+          firstName: this.user.firstName,
+          lastName: this.user.lastName,
+          avatarUrl: this.user.avatarUrl,
+        },
       });
       this.sendStepsToServer();
     }

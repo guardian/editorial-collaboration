@@ -45,7 +45,20 @@ app.post('/document/:id/steps', authMiddleware, async (req: Request, res: Respon
     return;
   }
 
-  await database.saveSteps(id, result.data).then(() => {
+  const authenticatedUser = res.locals['authenticatedUser'] as User | undefined;
+  const stepsWithUser = result.data.map(step => ({
+    ...step,
+    user: (authenticatedUser == null)
+      ? step.user
+      : {
+        email: authenticatedUser.email,
+        firstName: authenticatedUser.firstName,
+        lastName: authenticatedUser.lastName,
+        avatarUrl: authenticatedUser.avatarUrl,
+      },
+  }));
+
+  await database.saveSteps(id, stepsWithUser).then(() => {
     res.status(202);
     res.send('Received');
   }).catch(() => {
@@ -113,6 +126,7 @@ app.get('/user', authMiddleware, (req: Request, res: Response) => {
   }
   res.status(200);
   res.send({
+    email: authenticatedUser.email,
     firstName: authenticatedUser.firstName,
     lastName: authenticatedUser.lastName,
     avatarUrl: authenticatedUser.avatarUrl,

@@ -135,6 +135,7 @@ const App = () => {
               setError={setError}
               steps={steps}
               stepSelection={stepSelection}
+              user={user}
             />
           </Item>
           <Item size={4} cssOverrides={css(heightInherit)}>
