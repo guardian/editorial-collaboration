@@ -15,6 +15,13 @@ const transformSteps = (sendableSteps: SendableSteps[]): Step[] =>
     .sort((a, b) => a.version - b.version)
     .flatMap(content => content.steps.map(step => Step.fromJSON(schema, step)));
 
+const getInitialCollabVersion = (sendableSteps: SendableSteps[]): number => {
+  if (sendableSteps.length === 0) {
+    return 0;
+  }
+  return sendableSteps.reduce((minVersion, content) => Math.min(minVersion, content.version), sendableSteps[0]?.version ?? 0);
+};
+
 const insertHardBreak = (state: EditorState, dispatch?: (transaction: Transaction) => void) => {
   const hardBreak = state.schema.nodes['hard_break'];
   if (hardBreak == null) {
@@ -26,9 +33,9 @@ const insertHardBreak = (state: EditorState, dispatch?: (transaction: Transactio
   return true;
 };
 
-const plugins = () => {
+const plugins = (sendableSteps: SendableSteps[] = []) => {
   const clientID = 'test'; // TODO: Generate a unique client ID for each user/session
-  const version = 0;
+  const version = getInitialCollabVersion(sendableSteps);
   return [
     keymap({
       Enter: chainCommands(newlineInCode, createParagraphNear, liftEmptyBlock, splitBlock),
@@ -47,7 +54,7 @@ const initialiseEditor = (
   steps: SendableSteps[],
 ) => {
   try {
-    const state = configureEditorState(plugins(), document.document);
+    const state = configureEditorState(plugins(steps), document.document);
     const stepSender = new StepSender(document.id);
     const view = new EditorView(place, { attributes, state, dispatchTransaction: (transaction: Transaction) => {
         const newState = view.state.apply(transaction);
