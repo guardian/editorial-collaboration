@@ -13,10 +13,10 @@ import type { StepSelection } from '../model/steps';
 type AdditionRange = { from: number; to: number };
 type DeletionMarker = { pos: number; text: string };
 type ChangeSegment = {
-  deletionFrom: number;
-  deletionTo: number;
-  additionFrom: number;
-  additionTo: number;
+  deletionStart: number;
+  deletionEnd: number;
+  additionStart: number;
+  additionEnd: number;
   deletedText: string;
   addedText: string;
 };
@@ -37,10 +37,10 @@ const normaliseRanges = (ranges: AdditionRange[]): AdditionRange[] =>
 
 const trimSharedEdges = (segment: ChangeSegment): ChangeSegment => {
   let {
-    deletionFrom,
-    deletionTo,
-    additionFrom,
-    additionTo,
+    deletionStart,
+    deletionEnd,
+    additionStart,
+    additionEnd,
     deletedText,
     addedText,
   } = segment;
@@ -53,8 +53,8 @@ const trimSharedEdges = (segment: ChangeSegment): ChangeSegment => {
   ) {
     deletedText = deletedText.slice(1);
     addedText = addedText.slice(1);
-    deletionFrom += 1;
-    additionFrom += 1;
+    deletionStart += 1;
+    additionStart += 1;
   }
 
   while (
@@ -65,15 +65,15 @@ const trimSharedEdges = (segment: ChangeSegment): ChangeSegment => {
   ) {
     deletedText = deletedText.slice(0, -1);
     addedText = addedText.slice(0, -1);
-    deletionTo -= 1;
-    additionTo -= 1;
+    deletionEnd -= 1;
+    additionEnd -= 1;
   }
 
   return {
-    deletionFrom,
-    deletionTo,
-    additionFrom,
-    additionTo,
+    deletionStart,
+    deletionEnd,
+    additionStart,
+    additionEnd,
     deletedText,
     addedText,
   };
@@ -81,6 +81,7 @@ const trimSharedEdges = (segment: ChangeSegment): ChangeSegment => {
 
 type DiffOpType = 'equal' | 'delete' | 'insert';
 type DiffOp = { type: DiffOpType; text: string };
+type FlattenedDoc = { text: string; charPositions: Array<number | null> };
 
 const buildDiffOps = (startText: string, endText: string): DiffOp[] => {
   const startChars = Array.from(startText);
@@ -137,12 +138,71 @@ const buildDiffOps = (startText: string, endText: string): DiffOp[] => {
   return ops;
 };
 
+const flattenDoc = (doc: Node): FlattenedDoc => {
+  const from = 0;
+  const to = doc.content.size;
+  const blockSeparator = '\n';
+  const leafText = '\n';
+  let text = '';
+  const charPositions: Array<number | null> = [];
+  let first = true;
+
+  doc.nodesBetween(from, to, (node, pos) => {
+    const nodeText = node.isText
+      ? (node.text ?? '').slice(Math.max(from, pos) - pos, to - pos)
+      : !node.isLeaf
+        ? ''
+        : leafText;
+
+    const hasLeafText = node.isLeaf && nodeText.length > 0;
+    if (node.isBlock && (hasLeafText || node.isTextblock)) {
+      if (first) {
+        first = false;
+      } else {
+        text += blockSeparator;
+        Array.from(blockSeparator).forEach(() => charPositions.push(null));
+      }
+    }
+
+    if (nodeText.length === 0) {
+      return;
+    }
+
+    text += nodeText;
+    const characters = Array.from(nodeText);
+    if (node.isText) {
+      characters.forEach((_, index) => charPositions.push(pos + index));
+      return;
+    }
+    characters.forEach(() => charPositions.push(pos));
+  }, 0);
+
+  return { text, charPositions };
+};
+
+const textIndexToDocPosition = (textIndex: number, charPositions: Array<number | null>): number => {
+  const clampedIndex = Math.max(0, Math.min(textIndex, charPositions.length));
+  const leftPosition = (clampedIndex > 0) ? (charPositions[clampedIndex - 1] ?? null) : null;
+  const rightPosition = (clampedIndex < charPositions.length) ? (charPositions[clampedIndex] ?? null) : null;
+
+  if (leftPosition != null && rightPosition == null) {
+    return leftPosition + 1;
+  }
+  if (rightPosition != null) {
+    return rightPosition;
+  }
+  if (leftPosition != null) {
+    return leftPosition + 1;
+  }
+  return 1;
+};
+
 const getNetChanges = (
   startDoc: Node,
   endDoc: Node,
 ): { additions: AdditionRange[]; deletions: DeletionMarker[] } => {
-  const startText = startDoc.textBetween(0, startDoc.content.size, '\n', '\n');
-  const endText = endDoc.textBetween(0, endDoc.content.size, '\n', '\n');
+  const { text: startText } = flattenDoc(startDoc);
+  const { text: endText, charPositions: endCharPositions } = flattenDoc(endDoc);
   const ops = buildDiffOps(startText, endText);
 
   const additions: AdditionRange[] = [];
@@ -185,19 +245,25 @@ const getNetChanges = (
     index -= 1;
 
     const segment = trimSharedEdges({
-      deletionFrom: segmentStartInStart + 1,
-      deletionTo: segmentStartInStart + Array.from(deletedText).length + 1,
-      additionFrom: segmentStartInEnd + 1,
-      additionTo: segmentStartInEnd + Array.from(addedText).length + 1,
+      deletionStart: segmentStartInStart,
+      deletionEnd: segmentStartInStart + Array.from(deletedText).length,
+      additionStart: segmentStartInEnd,
+      additionEnd: segmentStartInEnd + Array.from(addedText).length,
       deletedText,
       addedText,
     });
 
-    if (segment.additionTo > segment.additionFrom) {
-      additions.push({ from: segment.additionFrom, to: segment.additionTo });
+    if (segment.additionEnd > segment.additionStart) {
+      additions.push({
+        from: textIndexToDocPosition(segment.additionStart, endCharPositions),
+        to: textIndexToDocPosition(segment.additionEnd, endCharPositions),
+      });
     }
-    if (segment.deletedText.length > 0 && segment.deletionTo > segment.deletionFrom) {
-      deletions.push({ pos: segment.additionFrom, text: segment.deletedText });
+    if (segment.deletedText.length > 0 && segment.deletionEnd > segment.deletionStart) {
+      deletions.push({
+        pos: textIndexToDocPosition(segment.additionStart, endCharPositions),
+        text: segment.deletedText,
+      });
     }
   }
 
@@ -235,8 +301,8 @@ const getVersionHistoryDecorationRanges = (doc: Node, steps: Step[], stepSelecti
   }
 
   const effectiveStartDoc = selectedStartDoc ?? currentDoc;
-  const startText = effectiveStartDoc.textBetween(0, effectiveStartDoc.content.size, '\n', '\n');
-  const endText = currentDoc.textBetween(0, currentDoc.content.size, '\n', '\n');
+  const startText = flattenDoc(effectiveStartDoc).text;
+  const endText = flattenDoc(currentDoc).text;
   if (startText === endText) {
     return succeedWith([]);
   }

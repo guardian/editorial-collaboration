@@ -182,6 +182,73 @@ describe('getVersionHistoryDecorations', () => {
     expect(deletionDecoration).toBeUndefined();
   });
 
+  it('positions decorations correctly after paragraph breaks', () => {
+    const multiParagraphStartDoc = schema.nodeFromJSON({
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [{ type: 'text', text: 'ab' }]
+        },
+        {
+          type: 'paragraph'
+        }
+      ]
+    });
+
+    const steps = [
+      Step.fromJSON(schema, {
+        stepType: 'replace',
+        from: 5,
+        to: 5,
+        slice: { content: [{ type: 'text', text: 'x' }] }
+      })
+    ];
+
+    const decorations = getVersionHistoryDecorationRanges(multiParagraphStartDoc, steps, { from: 0, to: 1 });
+    expect(decorations.success).toBe(true);
+    if (!decorations.success) {
+      throw new Error('Expected success result');
+    }
+    const addition = decorations.data[0];
+    expect(addition?.from).toBe(5);
+    expect(addition?.to).toBe(6);
+  });
+
+  it('positions decorations correctly around hard breaks', () => {
+    const hardBreakDoc = schema.nodeFromJSON({
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            { type: 'text', text: 'a' },
+            { type: 'hard_break' },
+            { type: 'text', text: 'b' }
+          ]
+        }
+      ]
+    });
+
+    const steps = [
+      Step.fromJSON(schema, {
+        stepType: 'replace',
+        from: 3,
+        to: 3,
+        slice: { content: [{ type: 'text', text: 'x' }] }
+      })
+    ];
+
+    const decorations = getVersionHistoryDecorationRanges(hardBreakDoc, steps, { from: 0, to: 1 });
+    expect(decorations.success).toBe(true);
+    if (!decorations.success) {
+      throw new Error('Expected success result');
+    }
+    const addition = decorations.data[0];
+    expect(addition?.from).toBe(3);
+    expect(addition?.to).toBe(4);
+  });
+
   it('removes duplicated added/deleted content and keeps only the net changed character', () => {
     const steps = STEP_FIXTURE
       .flatMap(entry => entry.steps)
