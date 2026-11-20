@@ -1,5 +1,6 @@
 import { css } from '@emotion/react';
 import { AlertBanner } from '@guardian/stand/AlertBanner';
+import { AvatarButton } from '@guardian/stand/AvatarButton';
 import { Grid, Item } from '@guardian/stand/Grid';
 import { Layout } from '@guardian/stand/Layout';
 import { TopBar, TopBarToolName } from '@guardian/stand/TopBar';
@@ -8,11 +9,13 @@ import { z } from 'zod';
 import { DocumentSearch } from './components/DocumentSearch';
 import { Editor } from './components/Editor';
 import { VersionHistory } from './components/VersionHistory';
-import { fetchDocuments, fetchSteps } from './libs/api';
+import { fetchAuthenticatedUser, fetchDocuments, fetchSteps } from './libs/api';
 import { document } from './model/document';
 import type { Document } from './model/document';
 import { stepServerResponse } from './model/steps';
 import type { SendableSteps, StepSelection } from './model/steps';
+import { authenticatedUser } from './model/user';
+import type { AuthenticatedUser } from './model/user';
 import { heightInherit, typography } from './styles';
 
 const style = {
@@ -27,6 +30,7 @@ const App = () => {
   const [steps, setSteps] = useState<SendableSteps[]>([]);
   const [stepSelection, setStepSelection] = useState<StepSelection | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [user, setUser] = useState<AuthenticatedUser | null>(null);
 
   useEffect(() => {
     fetchDocuments()
@@ -36,6 +40,14 @@ const App = () => {
         setDocuments(documents.reverse());
       })
       .catch(() => setError('Failed to fetch documents'));
+  }, []);
+
+  useEffect(() => {
+    fetchAuthenticatedUser()
+      .then(response => response.json())
+      .then(json => authenticatedUser.parse(json))
+      .then(setUser)
+      .catch(() => setError('Failed to fetch user profile'));
   }, []);
 
   const fetchStepsAndSetCurrentDocument = useCallback((document: Document) => {
@@ -87,6 +99,11 @@ const App = () => {
       <Layout.TopBar>
         <TopBar>
           <TopBarToolName name='Edit History' favicon={{ icon: 'history' }} />
+          {user != null && (
+            user.avatarUrl != null
+              ? <AvatarButton src={user.avatarUrl} alt={`${user.firstName} ${user.lastName}`} size="sm" />
+              : <AvatarButton initials={`${user.firstName[0] ?? ''}${user.lastName[0] ?? ''}`} size="sm" />
+          )}
         </TopBar>
       </Layout.TopBar>
       <Layout.Sidebar layoutSmBreakpoint='above-grid' cssOverrides={css(heightInherit)}>

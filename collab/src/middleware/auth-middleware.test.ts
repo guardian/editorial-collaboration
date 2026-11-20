@@ -1,10 +1,16 @@
 import type { Request, Response } from "express";
 import { mocked } from "jest-mock";
-import { getVerifiedUserEmail } from "../panDomainAuth";
+import { getVerifiedUser } from "../panDomainAuth";
 import { authMiddleware } from "./auth-middleware";
 
 interface MockResponse extends Response {
     locals: {
+        authenticatedUser?: {
+            email: string;
+            firstName: string;
+            lastName: string;
+            avatarUrl?: string;
+        };
         userEmail?: string;
     };
     status: jest.Mock;
@@ -12,7 +18,7 @@ interface MockResponse extends Response {
 
 jest.mock("../panDomainAuth");
 jest.mock("@guardian/pan-domain-node")
-const mockGetVerifiedUserEmailFunction = mocked(getVerifiedUserEmail);
+const mockGetVerifiedUserFunction = mocked(getVerifiedUser);
 const mockNextFunction = jest.fn();
 
 const getMockRequest = (header: string | undefined) => {
@@ -49,7 +55,7 @@ describe("auth-middleware", () => {
         const mockRequest = getMockRequest("mock-panda-cookie");
         const mockResponse = getMockResponse();
 
-        mockGetVerifiedUserEmailFunction.mockResolvedValueOnce(null);
+        mockGetVerifiedUserFunction.mockResolvedValueOnce(null);
         await authMiddleware(mockRequest, mockResponse, mockNextFunction);
 
         expect(mockResponse.status).toHaveBeenCalledWith(403);
@@ -61,10 +67,19 @@ describe("auth-middleware", () => {
         const mockRequest = getMockRequest("mock-panda-cookie");
         const mockResponse = getMockResponse();
 
-        mockGetVerifiedUserEmailFunction.mockResolvedValueOnce("jane.doe@guardian.co.uk");
+        mockGetVerifiedUserFunction.mockResolvedValueOnce({
+            email: "jane.doe@guardian.co.uk",
+            firstName: "Jane",
+            lastName: "Doe",
+            authenticatingSystem: "test",
+            authenticatedIn: [],
+            expires: Date.now() + 1000,
+            multifactor: true,
+        });
         await authMiddleware(mockRequest, mockResponse, mockNextFunction);
 
         expect(mockResponse.status).not.toHaveBeenCalled();
+        expect(mockResponse.locals["authenticatedUser"]?.firstName).toBe("Jane");
         expect(mockResponse.locals["userEmail"]).toBe("jane.doe@guardian.co.uk");
         expect(mockNextFunction).toHaveBeenCalledTimes(1);
     });

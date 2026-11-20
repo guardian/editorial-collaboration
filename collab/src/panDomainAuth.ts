@@ -1,6 +1,8 @@
 import { fromIni, fromNodeProviderChain } from "@aws-sdk/credential-providers";
 import type {
-    AuthenticationResult} from "@guardian/pan-domain-node";
+    AuthenticationResult,
+    User,
+} from "@guardian/pan-domain-node";
 import {
     guardianValidation,
     PanDomainAuthentication
@@ -23,6 +25,13 @@ const panda = new PanDomainAuthentication(
 export const getVerifiedUserEmail = async (
     cookieHeader: string
 ): Promise<null | string> => {
-    const  result :AuthenticationResult  = await panda.verify(cookieHeader);
+    const result: AuthenticationResult = await panda.verify(cookieHeader);
     return result.success ? result.user.email : null;
+};
+
+export const getVerifiedUser = async (
+    cookieHeader: string
+): Promise<null | User> => {
+    const result: AuthenticationResult = await panda.verify(cookieHeader);
+    return result.success ? result.user : null;
 };

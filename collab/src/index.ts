@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-misused-promises -- fixes middleware linting warning, which is a known issue with Express typings, see: https://github.com/DefinitelyTyped/DefinitelyTyped/issues/50871*/
+import type { User } from '@guardian/pan-domain-node';
 import cors from 'cors';
 import type { Request, Response } from 'express';
 /* eslint "import/no-named-as-default-member": "off" -- This is the only way I can see to avoid a warning about the (correct) way express is imported below */
@@ -100,5 +101,20 @@ app.get('/documents', authMiddleware, async (req: Request, res: Response) => {
   }).catch(() => {
     res.status(500);
     res.send('Error fetching document ids from database');
+  });
+});
+
+app.get('/user', authMiddleware, (req: Request, res: Response) => {
+  const authenticatedUser = res.locals['authenticatedUser'] as User | undefined;
+  if (authenticatedUser == null) {
+    res.status(500);
+    res.send('Authenticated user not available');
+    return;
+  }
+  res.status(200);
+  res.send({
+    firstName: authenticatedUser.firstName,
+    lastName: authenticatedUser.lastName,
+    avatarUrl: authenticatedUser.avatarUrl,
   });
 });

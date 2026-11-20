@@ -20,6 +20,13 @@ const fetchDocuments = async () =>
     credentials: 'include',
   });
 
+const fetchAuthenticatedUser = async () =>
+  await fetch(`${SERVER}/user`, {
+    method: 'GET',
+    mode: 'cors',
+    credentials: 'include',
+  });
+
 const fetchSteps = async (documentId: string) =>
   await fetch(`${SERVER}/document/${documentId}/steps`, {
     method: 'GET',
@@ -40,6 +47,7 @@ const sendStepsToServer = async (documentId: string, stepsToSend: SendableSteps[
 
 export {
   fetchDocuments,
+  fetchAuthenticatedUser,
   registerDocument,
   fetchSteps,
   sendStepsToServer,

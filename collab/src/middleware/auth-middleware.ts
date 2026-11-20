@@ -1,5 +1,5 @@
 import type {NextFunction, Request, Response} from "express";
-import {getVerifiedUserEmail} from "../panDomainAuth";
+import {getVerifiedUser} from "../panDomainAuth";
 
 export const authMiddleware = (
     async (
@@ -11,9 +11,10 @@ export const authMiddleware = (
         if (maybeCookieHeader === undefined) {
             return res.status(403).send();
         }
-        const maybeAuthenticatedEmail = await getVerifiedUserEmail(maybeCookieHeader);
-        if (maybeAuthenticatedEmail !== null) {
-            res.locals["userEmail"] = maybeAuthenticatedEmail;
+        const maybeAuthenticatedUser = await getVerifiedUser(maybeCookieHeader);
+        if (maybeAuthenticatedUser !== null) {
+            res.locals["authenticatedUser"] = maybeAuthenticatedUser;
+            res.locals["userEmail"] = maybeAuthenticatedUser.email;
             return next();
         } else {
             return res.status(403).send();
