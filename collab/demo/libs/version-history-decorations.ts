@@ -1,9 +1,10 @@
 import type { Node } from 'prosemirror-model';
 import type { Step } from 'prosemirror-transform';
+import { Step as ProsemirrorStep } from 'prosemirror-transform';
 import { Decoration } from 'prosemirror-view';
 import type { Result} from '../model/result';
 import { failWith, succeedWith } from '../model/result';
-import type { StepSelection } from '../model/steps';
+import type { SendableSteps, StepSelection } from '../model/steps';
 
 /**
  * Takes a document and an array of steps to apply to the document. It simplifies the steps into additions and deletions,
@@ -82,6 +83,14 @@ const trimSharedEdges = (segment: ChangeSegment): ChangeSegment => {
 type DiffOpType = 'equal' | 'delete' | 'insert';
 type DiffOp = { type: DiffOpType; text: string };
 type FlattenedDoc = { text: string; charPositions: Array<number | null> };
+type AttributedUser = SendableSteps['user'];
+type AttributedStep = { step: Step; user?: AttributedUser };
+type AttributedStepGroup = { steps: AttributedStep[]; user?: AttributedUser };
+type DecorationAttribution = {
+  user?: AttributedUser;
+  names: string[];
+  title: string;
+};
 
 const buildDiffOps = (startText: string, endText: string): DiffOp[] => {
   const startChars = Array.from(startText);
@@ -197,6 +206,65 @@ const textIndexToDocPosition = (textIndex: number, charPositions: Array<number |
   return 1;
 };
 
+const hasSendableStepShape = (value: unknown): value is SendableSteps => {
+  return typeof value === 'object' && value != null && 'clientTimestamp' in value && 'steps' in value;
+};
+
+const isSendableStepsArray = (steps: Step[] | SendableSteps[]): steps is SendableSteps[] => {
+  return hasSendableStepShape(steps[0]);
+};
+
+const getAttributedStepGroups = (steps: Step[] | SendableSteps[], stepSchema: Node['type']['schema']): AttributedStepGroup[] => {
+  if (!isSendableStepsArray(steps)) {
+    return steps.map(step => ({ steps: [{ step }] }));
+  }
+
+  return steps.map(entry => ({
+    user: entry.user,
+    steps: entry.steps.map(rawStep => ({
+      step: ProsemirrorStep.fromJSON(stepSchema, rawStep),
+      user: entry.user,
+    })),
+  }));
+};
+
+const getUserName = (user?: AttributedUser): string | null => {
+  if (user == null) {
+    return null;
+  }
+  return `${user.firstName} ${user.lastName}`.trim();
+};
+
+const getDecorationAttribution = (stepGroups: AttributedStepGroup[], selection: StepSelection): DecorationAttribution | undefined => {
+  const names = Array.from(new Set(
+    stepGroups
+      .slice(selection.from, selection.to)
+      .map(group => getUserName(group.user))
+      .filter((name): name is string => name != null && name.length > 0)
+  ));
+
+  if (names.length === 0) {
+    return undefined;
+  }
+
+  if (names.length === 1) {
+    const singleUser = stepGroups
+      .slice(selection.from, selection.to)
+      .map(group => group.user)
+      .find((user): user is NonNullable<AttributedUser> => user != null);
+    return {
+      user: singleUser,
+      names,
+      title: `Changed by ${names[0]}`,
+    };
+  }
+
+  return {
+    names,
+    title: `Changes by ${names.join(', ')}`,
+  };
+};
+
 const getNetChanges = (
   startDoc: Node,
   endDoc: Node,
@@ -254,9 +322,14 @@ const getNetChanges = (
     });
 
     if (segment.additionEnd > segment.additionStart) {
+      const from = textIndexToDocPosition(segment.additionStart, endCharPositions);
+      const to = textIndexToDocPosition(segment.additionEnd, endCharPositions);
+      if (to <= from) {
+        continue;
+      }
       additions.push({
-        from: textIndexToDocPosition(segment.additionStart, endCharPositions),
-        to: textIndexToDocPosition(segment.additionEnd, endCharPositions),
+        from,
+        to,
       });
     }
     if (segment.deletedText.length > 0 && segment.deletionEnd > segment.deletionStart) {
@@ -273,31 +346,35 @@ const getNetChanges = (
   };
 };
 
-const getVersionHistoryDecorationRanges = (doc: Node, steps: Step[], stepSelection: StepSelection): Result<Decoration[]> => {
-  if (stepSelection.from < 0 || stepSelection.to > steps.length) {
-    return failWith(`Step selection to index ${stepSelection.to} is greater than the number of steps ${steps.length}`);
+const getVersionHistoryDecorationRanges = (doc: Node, inputSteps: Step[] | SendableSteps[], stepSelection: StepSelection): Result<Decoration[]> => {
+  const stepGroups = getAttributedStepGroups(inputSteps, doc.type.schema);
+  if (stepSelection.from < 0 || stepSelection.to > stepGroups.length) {
+    return failWith(`Step selection to index ${stepSelection.to} is greater than the number of steps ${stepGroups.length}`);
   }
   let currentDoc = doc;
   let selectedStartDoc: Node | null = null;
+  const attribution = getDecorationAttribution(stepGroups, stepSelection);
 
-  for (let index = 0; index < stepSelection.to; index += 1) {
-    const step = steps[index];
-    if (step == null) {
+  for (let groupIndex = 0; groupIndex < stepSelection.to; groupIndex += 1) {
+    const group = stepGroups[groupIndex];
+    if (group == null) {
       continue;
     }
 
-    if (index === stepSelection.from) {
+    if (groupIndex === stepSelection.from) {
       selectedStartDoc = currentDoc;
     }
 
-    const applied = step.apply(currentDoc);
-    if (applied.failed != null) {
-      return failWith(applied.failed);
+    for (const attributedStep of group.steps) {
+      const applied = attributedStep.step.apply(currentDoc);
+      if (applied.failed != null) {
+        return failWith(applied.failed);
+      }
+      if (applied.doc == null) {
+        return failWith('Step application did not return a document');
+      }
+      currentDoc = applied.doc;
     }
-    if (applied.doc == null) {
-      return failWith('Step application did not return a document');
-    }
-    currentDoc = applied.doc;
   }
 
   const effectiveStartDoc = selectedStartDoc ?? currentDoc;
@@ -308,13 +385,19 @@ const getVersionHistoryDecorationRanges = (doc: Node, steps: Step[], stepSelecti
   }
 
   const finalChanges = getNetChanges(effectiveStartDoc, currentDoc);
+  const attributionUserNames = attribution?.names.join(', ');
+  const additionDomAttributes = {
+    class: 'version-history-addition',
+    ...(attribution?.title != null ? { title: attribution.title } : {}),
+    ...(attributionUserNames != null ? { 'data-version-history-user': attributionUserNames } : {}),
+  };
 
   const additionDecorations: Decoration[] = finalChanges.additions.map(addition =>
     Decoration.inline(
       addition.from,
       addition.to,
-      { class: 'version-history-addition' },
-      { changeType: 'addition' }
+      additionDomAttributes,
+      { changeType: 'addition', user: attribution?.user, users: attribution?.names }
     ));
 
   const deletionDecorations: Decoration[] = finalChanges.deletions.map(deletion =>
@@ -324,9 +407,13 @@ const getVersionHistoryDecorationRanges = (doc: Node, steps: Step[], stepSelecti
         const span = document.createElement('span');
         span.className = 'version-history-deletion';
         span.textContent = deletion.text;
+        if (attribution != null) {
+          span.title = attribution.title;
+          span.setAttribute('data-version-history-user', attribution.names.join(', '));
+        }
         return span;
       },
-      { side: -1, changeType: 'deletion', deletedText: deletion.text }
+      { side: -1, changeType: 'deletion', deletedText: deletion.text, user: attribution?.user, users: attribution?.names }
     ));
 
   return succeedWith([...additionDecorations, ...deletionDecorations]);

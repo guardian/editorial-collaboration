@@ -108,12 +108,14 @@ const Editor: FunctionComponent<EditorProps> = ({
       const state = configureEditorState(plugins(stepsToApply), currentDocument.document);
       const transaction = receiveTransaction(state, transformSteps(stepsToApply), []);
       state.apply(transaction);
-      const ranges = (stepSelection != null) ? getVersionHistoryDecorationRanges(state.doc, transformSteps(steps), stepSelection) : { success: false, data: [] };
+      const ranges = (stepSelection != null) ? getVersionHistoryDecorationRanges(state.doc, steps, stepSelection) : { success: false, data: [] };
       const decorations = ranges.success ? ranges.data : [];
       editorView.setProps({
         state,
         attributes: attributes(stepSelection),
-        decorations: (state: EditorState) => DecorationSet.create(state.doc, decorations)
+        // DecorationSet.create mutates the provided array (inserts internal nulls),
+        // so pass a fresh copy for each call to avoid runtime crashes on reuse.
+        decorations: (state: EditorState) => DecorationSet.create(state.doc, decorations.slice())
       });
       editorView.dispatch(transaction);
     }

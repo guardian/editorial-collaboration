@@ -1,6 +1,7 @@
 import { schema } from 'prosemirror-schema-basic';
 import { Step } from 'prosemirror-transform';
 import { STEP_FIXTURE } from '../fixtures/steps';
+import type { SendableSteps } from '../model/steps';
 import { getVersionHistoryDecorationRanges } from './version-history-decorations';
 
 type Spec = {
@@ -247,6 +248,37 @@ describe('getVersionHistoryDecorations', () => {
     const addition = decorations.data[0];
     expect(addition?.from).toBe(3);
     expect(addition?.to).toBe(4);
+  });
+
+  it('includes user attribution metadata when sendable steps include a user', () => {
+    const attributedSteps: SendableSteps[] = [{
+      version: 0,
+      clientID: 'test-client',
+      clientTimestamp: '2026-11-20T00:00:00.000Z',
+      user: {
+        email: 'jane.doe@guardian.co.uk',
+        firstName: 'Jane',
+        lastName: 'Doe',
+        avatarUrl: 'https://example.com/jane.jpg',
+      },
+      steps: [{
+        stepType: 'replace',
+        from: 1,
+        to: 1,
+        slice: { content: [{ type: 'text', text: 'cat' }] }
+      }]
+    }];
+
+    const decorations = getVersionHistoryDecorationRanges(startingDoc, attributedSteps, { from: 0, to: 1 });
+    expect(decorations.success).toBe(true);
+    if (!decorations.success) {
+      throw new Error('Expected success result');
+    }
+    const addition = decorations.data[0];
+    const spec = addition?.spec as (Spec & { user?: SendableSteps['user']; users?: string[] }) | undefined;
+    expect(spec?.changeType).toBe('addition');
+    expect(spec?.user?.email).toBe('jane.doe@guardian.co.uk');
+    expect(spec?.users).toEqual(['Jane Doe']);
   });
 
   it('removes duplicated added/deleted content and keeps only the net changed character', () => {
