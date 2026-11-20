@@ -15,6 +15,15 @@ import { stepServerResponse } from './model/steps';
 import type { SendableSteps, StepSelection } from './model/steps';
 import { heightInherit, typography } from './styles';
 
+const style = {
+  main: css({
+    padding: 'unset',
+  }),
+  editor: css({
+    position: 'relative'
+  })
+}
+
 const App = () => {
   const [currentDocument, setCurrentDocument] = useState<Document | null>(null);
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -51,7 +60,14 @@ const App = () => {
     setStepSelection(null);
     setError(null);
   }, []);
-  
+
+  const closeEditor = useCallback(() => {
+    setCurrentDocument(null);
+    setSteps([]);
+    setStepSelection(null);
+    setError(null);
+  }, []);
+
   return (
     <Layout cssOverrides={css(heightInherit)}>
       {(error != null) && (
@@ -80,10 +96,11 @@ const App = () => {
           setError={setError}
         />
       </Sidebar>
-      <Grid cssOverrides={css(heightInherit)}>
-        <Item size={{sm: 12, md: 8}}>
+      <Grid cssOverrides={[css(heightInherit), style.main]}>
+        <Item size={{sm: 12, md: 8}} cssOverrides={style.editor}>
           <Editor
             currentDocument={currentDocument}
+            closeEditor={closeEditor}
             createNewDocument={createNewDocument}
             setError={setError}
             steps={steps}

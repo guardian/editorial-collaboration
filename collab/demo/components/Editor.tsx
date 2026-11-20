@@ -19,6 +19,7 @@ import { panel } from '../styles';
 
 type EditorProps = {
   currentDocument: Document | null;
+  closeEditor: () => void;
   createNewDocument: (document: Document) => void;
   setError: (error: string) => void;
   steps: SendableSteps[];
@@ -54,6 +55,13 @@ const style = {
       }
     }
   }),
+  footer: css({
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    backgroundColor: `${baseColors.neutral['850']}`,
+    padding: 4,
+  }),
   preview: css({
     color: baseColors.neutral['200'],
   })
@@ -65,6 +73,7 @@ const attributes = (selection: StepSelection | null) => selection == null ? base
 
 const Editor: FunctionComponent<EditorProps> = ({
   currentDocument,
+  closeEditor,
   createNewDocument,
   setError,
   steps,
@@ -107,7 +116,7 @@ const Editor: FunctionComponent<EditorProps> = ({
     }
   }, [editorView, currentDocument, stepSelection]);
 
-  const onClick = useCallback(() => {
+  const onClickCreateDocument = useCallback(() => {
     setPending(true);
     const id = v4();
     const state = configureEditorState();
@@ -121,13 +130,22 @@ const Editor: FunctionComponent<EditorProps> = ({
       .finally(() => setPending(false));
   }, []);
 
+  const onClickCloseEditor = useCallback(() => {
+    documentIdRef.current = null;
+    closeEditor();
+  }, []);
+
   return (
     <>{(currentDocument == null) ?
-      <>
-        <div css={style.placeholder}>Select or create a document to start editing...</div>
-        <Button isDisabled={pending} cssOverrides={panel.button} onClick={onClick}>Create New Document</Button>
-      </> :
-      <div css={[style.editor, stepSelection != null && style.preview]} ref={editorRef}/>}
+        <div css={style.placeholder}>Select or create a document to start editing...</div> :
+        <div css={[style.editor, stepSelection != null && style.preview]} ref={editorRef}/>
+      }
+        <div css={style.footer}>
+          {(currentDocument == null) ?
+            <Button isDisabled={pending} cssOverrides={panel.button} onClick={onClickCreateDocument}>Create New Document</Button> :
+            <Button cssOverrides={panel.button} onClick={onClickCloseEditor}>Close Editor</Button>
+          }
+        </div>
     </>
   );
 };
