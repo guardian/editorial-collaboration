@@ -4,6 +4,7 @@ import { keymap } from 'prosemirror-keymap';
 import type { EditorState, Transaction } from 'prosemirror-state';
 import { Step } from 'prosemirror-transform';
 import { EditorView } from 'prosemirror-view';
+import { v4 as uuid } from 'uuid';
 import type { Document } from '../model/document';
 import type { SendableSteps } from '../model/steps';
 import { configureEditorState } from './configure-editor-state';
@@ -14,6 +15,31 @@ const transformSteps = (sendableSteps: SendableSteps[]): Step[] =>
   sendableSteps
     .sort((a, b) => a.version - b.version)
     .flatMap(content => content.steps.map(step => Step.fromJSON(schema, step)));
+
+const CLIENT_ID_STORAGE_KEY = 'editorial-collaboration-client-id';
+let cachedClientID: string | null = null;
+
+const getClientID = (): string => {
+  if (cachedClientID != null) {
+    return cachedClientID;
+  }
+
+  if (typeof window === 'undefined') {
+    cachedClientID = uuid();
+    return cachedClientID;
+  }
+
+  const existingClientID = window.sessionStorage.getItem(CLIENT_ID_STORAGE_KEY);
+  if (existingClientID != null && existingClientID.length > 0) {
+    cachedClientID = existingClientID;
+    return existingClientID;
+  }
+
+  const newClientID = uuid();
+  window.sessionStorage.setItem(CLIENT_ID_STORAGE_KEY, newClientID);
+  cachedClientID = newClientID;
+  return newClientID;
+};
 
 const getInitialCollabVersion = (sendableSteps: SendableSteps[]): number => {
   if (sendableSteps.length === 0) {
@@ -34,7 +60,7 @@ const insertHardBreak = (state: EditorState, dispatch?: (transaction: Transactio
 };
 
 const plugins = (sendableSteps: SendableSteps[] = []) => {
-  const clientID = 'test'; // TODO: Generate a unique client ID for each user/session
+  const clientID = getClientID();
   const version = getInitialCollabVersion(sendableSteps);
   return [
     keymap({
