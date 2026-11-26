@@ -27,7 +27,7 @@
     "@babel/preset-react": "^7.28.5",
     "@emotion/react": "^11.14.0",
     "@guardian/eslint-config-typescript": "^10.0.1",
-    "@guardian/pan-domain-node": "^1.2.3",
+    "@guardian/pan-domain-node": "^3.0.0",
     "@guardian/tsconfig": "^0.3.1",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.6",
