@@ -1,6 +1,4 @@
 import { fromIni, fromNodeProviderChain } from "@aws-sdk/credential-providers";
-import type {
-    AuthenticationResult} from "@guardian/pan-domain-node";
 import {
     guardianValidation,
     PanDomainAuthentication
@@ -11,18 +9,22 @@ export const pandaSettingsBucketName = "pan-domain-auth-settings";
 export const pandaPublicConfigFilename = `${DOMAIN}.settings.public`;
 
 export const pandaCookieName = "gutoolsAuth-assym";
-const panda = new PanDomainAuthentication(
-    pandaCookieName,
-    AWS_REGION,
-    pandaSettingsBucketName,
-    pandaPublicConfigFilename,
-    guardianValidation,
-    STAGE==='LOCAL' ? fromIni({ profile: LOCAL_PROFILE }):  fromNodeProviderChain(),
-);
+let panda: Promise<PanDomainAuthentication> | undefined;
 
 export const getVerifiedUserEmail = async (
     cookieHeader: string
 ): Promise<null | string> => {
-    const  result :AuthenticationResult  = await panda.verify(cookieHeader);
+    panda ??= PanDomainAuthentication.builder({
+        cookieName: pandaCookieName,
+        region: AWS_REGION,
+        bucket: pandaSettingsBucketName,
+        keyFile: pandaPublicConfigFilename,
+        validateUser: guardianValidation,
+        credentialsProvider: STAGE === "LOCAL" ? fromIni({ profile: LOCAL_PROFILE }) : fromNodeProviderChain(),
+    }).catch((error: unknown) => {
+        panda = undefined;
+        throw error;
+    });
+    const result = await (await panda).verify(cookieHeader);
     return result.success ? result.user.email : null;
 };
